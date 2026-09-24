@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Real-time 3D SPH fluid simulation running entirely on the GPU with WebGL2." />
+    <title>Fluid | 3D SPH Simulation</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 3C11 10 7 15 7 20a9 9 0 0 0 18 0c0-5-4-10-9-17z' fill='%235cc8ff'/></svg>" />
+  </head>
+  <body>
+    <canvas id="app"></canvas>
+
+    <header class="title">
+      <h1>Fluid</h1>
+      <p>Real-time 3D SPH water, simulated on your GPU</p>
+    </header>
+
+    <div id="stats" class="stats">-- fps</div>
+
+    <aside id="help" class="help">
+      <button id="help-toggle" class="help-toggle" aria-expanded="true">Controls</button>
+      <ul>
+        <li><kbd>Drag</kbd> orbit camera</li>
+        <li><kbd>Scroll</kbd> zoom</li>
+        <li><kbd>Shift</kbd> + <kbd>Drag</kbd> stir the water</li>
+        <li><kbd>Right drag</kbd> attract water</li>
+        <li><kbd>Shift</kbd> + <kbd>Right drag</kbd> repel water</li>
+        <li><kbd>Alt</kbd> + <kbd>Drag</kbd> or <kbd>Arrows</kbd>/<kbd>WASD</kbd> tilt the box</li>
+        <li><kbd>Space</kbd> pause, <kbd>R</kbd> reset, <kbd>F</kbd> render mode</li>
+      </ul>
+    </aside>
+
+    <div id="error" class="error" hidden>
+      <h2>Your browser can't run this simulation</h2>
+      <p id="error-message"></p>
+      <p>Try a recent version of Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
