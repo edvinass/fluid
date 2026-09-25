@@ -7,11 +7,10 @@ import { LavaRenderer } from './LavaRenderer';
 import { LavaSimulator } from './LavaSimulator';
 import { THEMES } from './themes';
 import { LavaToolbar } from './toolbar';
-import { createLavaUI, QUALITY_LEVELS, type LavaSettings } from './ui';
+import { createLavaUI, type LavaSettings } from './ui';
 
 const MAX_DEVICE_PIXEL_RATIO = 2;
-const AUTO_QUALITY_MIN_FPS = 40;
-const QUALITY_ORDER = Object.keys(QUALITY_LEVELS);
+const STEP = 1 / 120;
 
 function showError(message: string): void {
   document.getElementById('error-message')!.textContent = message;
@@ -21,36 +20,28 @@ function showError(message: string): void {
 function start(): void {
   const canvas = document.getElementById('app') as HTMLCanvasElement;
   let gl: WebGL2RenderingContext;
-  let sim: LavaSimulator;
   let renderer: LavaRenderer;
   try {
     gl = createContext(canvas);
-    sim = new LavaSimulator(gl);
     renderer = new LavaRenderer(gl);
   } catch (err) {
     showError(err instanceof UnsupportedError ? err.message : String(err));
     return;
   }
+  const sim = new LavaSimulator();
 
-  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 700;
   const settings: LavaSettings = {
-    quality: mobile ? 'Low' : 'Medium',
-    autoQuality: true,
     theme: THEMES[0].name,
     sim: {
       heat: 1,
-      cooling: 0.25,
-      buoyancy: 1.5,
-      cohesion: 2,
-      viscosity: 6,
-      drag: 2,
-      pressure: 20,
-      nearPressure: 2,
-      substeps: 3,
+      cooling: 0.06,
+      buoyancy: 0.5,
+      drag: 5,
+      waxAmount: 0.14,
       timeScale: 1,
       paused: false,
     },
-    look: { brightness: 1, smoothing: 1, exposure: 1 },
+    look: { brightness: 1, exposure: 1 },
   };
 
   const camera = new PerspectiveCamera(40, 1, 0.05, 100);
@@ -59,17 +50,7 @@ function start(): void {
   interaction.controls.target.set(0, -0.12, 0);
   interaction.controls.update();
 
-  let lastQualityChange = performance.now();
-  let slowSamples = 0;
-  const restart = () => {
-    sim.reset(QUALITY_LEVELS[settings.quality]);
-    lastQualityChange = performance.now();
-    slowSamples = 0;
-  };
-  const chooseQuality = () => {
-    settings.autoQuality = false;
-    restart();
-  };
+  const restart = () => sim.reset(settings.sim.waxAmount);
   const toolbar = new LavaToolbar(document.getElementById('toolbar')!, (name) => {
     settings.theme = name;
     setTheme();
@@ -77,7 +58,7 @@ function start(): void {
   const setTheme = () => toolbar.select(settings.theme);
   restart();
   setTheme();
-  createLavaUI(settings, QUALITY_ORDER, { chooseQuality, setTheme, restart });
+  createLavaUI(settings, { setTheme, restart });
 
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
@@ -133,17 +114,11 @@ function start(): void {
     if (params.paused) {
       accumulator = 0;
     } else {
-      const fixedDt = 1 / (60 * params.substeps);
-      accumulator += realDt * params.timeScale;
-      const maxSteps = Math.ceil(params.substeps * Math.max(params.timeScale, 1) * 2);
-      let steps = Math.floor(accumulator / fixedDt);
-      if (steps > maxSteps) {
-        steps = maxSteps;
-        accumulator = 0;
-      } else {
-        accumulator -= steps * fixedDt;
+      accumulator = Math.min(accumulator + realDt * params.timeScale, 0.5);
+      while (accumulator >= STEP) {
+        sim.step(STEP, params, interaction.mouse);
+        accumulator -= STEP;
       }
-      for (let i = 0; i < steps; i++) sim.substep(fixedDt, params, interaction.mouse);
     }
 
     const theme = THEMES.find((t) => t.name === settings.theme) ?? THEMES[0];
@@ -153,18 +128,10 @@ function start(): void {
     frames++;
     if (now - fpsTime > 500) {
       const fps = (frames * 1000) / (now - fpsTime);
-      statsEl.textContent = `${fps.toFixed(0)} fps · ${sim.count.toLocaleString()} wax particles${params.paused ? ' · paused' : ''}`;
+      const n = sim.blobs.length;
+      statsEl.textContent = `${fps.toFixed(0)} fps · ${n} ${n === 1 ? 'blob' : 'blobs'}${params.paused ? ' · paused' : ''}`;
       frames = 0;
       fpsTime = now;
-      const since = now - lastQualityChange;
-      if (settings.autoQuality && !params.paused && !document.hidden && since > 1500 && since < 12000) {
-        slowSamples = fps < AUTO_QUALITY_MIN_FPS ? slowSamples + 1 : 0;
-        const level = QUALITY_ORDER.indexOf(settings.quality);
-        if (slowSamples >= 4 && level > 0) {
-          settings.quality = QUALITY_ORDER[level - 1];
-          restart();
-        }
-      }
     }
     requestAnimationFrame(frame);
   };

@@ -18,7 +18,7 @@ export class LavaInteraction {
     rayDir: [0, 0, -1],
     point: [0, 0, 0],
     velocity: [0, 0, 0],
-    radius: 0.06,
+    radius: 0.08,
     strength: 1,
   };
   idleTime = 0;

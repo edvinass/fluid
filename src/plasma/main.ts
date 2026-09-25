@@ -6,7 +6,7 @@ import { GASES, hueColor } from './gases';
 import { PlasmaInteraction } from './interaction';
 import { Microphone } from './microphone';
 import { PlasmaRenderer } from './PlasmaRenderer';
-import { PlasmaSimulator, type Vec3 } from './PlasmaSimulator';
+import { PlasmaSimulator, type FilamentColors, type Vec3 } from './PlasmaSimulator';
 import { PlasmaToolbar } from './toolbar';
 import { createPlasmaUI, type PlasmaSettings } from './ui';
 
@@ -31,8 +31,8 @@ function start(): void {
 
   const settings: PlasmaSettings = {
     sound: false,
-    sim: { count: 9, voltage: 1, twist: 1, tendrils: 1, wander: 1, flicker: 1, timeScale: 1, paused: false },
-    look: { bloom: 0.8, exposure: 1, roomLight: 1 },
+    sim: { count: 24, voltage: 1, twist: 1, tendrils: 0.7, wander: 1, flicker: 1, timeScale: 1, paused: false },
+    look: { bloom: 0.6, exposure: 1, roomLight: 1 },
   };
 
   const camera = new PerspectiveCamera(40, 1, 0.05, 100);
@@ -44,11 +44,13 @@ function start(): void {
 
   let gasIndex = 0;
   let time = 0;
-  const colorOf = (i: number, seed: number): Vec3 => {
-    const gas = GASES[gasIndex].color;
-    return gas ?? hueColor((seed * 0.137 + i * 0.13 + time * 0.05) % 1);
+  const colorOf = (i: number, seed: number): FilamentColors => {
+    const { thread, glow } = GASES[gasIndex];
+    if (thread && glow) return { thread, glow };
+    const h = (seed * 0.137 + i * 0.13 + time * 0.05) % 1;
+    return { thread: hueColor(h), glow: hueColor((h + 0.08) % 1) };
   };
-  const gasColor = (): Vec3 => GASES[gasIndex].color ?? hueColor((time * 0.05) % 1).map((c) => 0.4 + 0.6 * c) as Vec3;
+  const gasColor = (): Vec3 => GASES[gasIndex].glow ?? (hueColor((time * 0.05) % 1).map((c) => 0.4 + 0.6 * c) as Vec3);
 
   const toolbar = new PlasmaToolbar(document.getElementById('toolbar')!, (i) => setGas(i));
   const setGas = (i: number) => {

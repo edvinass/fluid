@@ -8,9 +8,12 @@ out float vAcross;
 out float vIntensity;
 out vec3 vColor;
 out vec3 vWorld;
+/** 0 where the discharge is tight and sharp, near the electrode, to 1 where it spreads out at the glass. */
+out float vSpread;
+out float vSeed;
 
-// Half the ribbon's width, in core widths. The ribbon carries the soft halo around the core.
-const float HALO = 5.0;
+// Half the ribbon's width, in core widths. The ribbon carries the soft glow around the core.
+const float HALO = 4.0;
 const float MIN_CORE_PX = 1.1;
 
 vec3 pointAt(int k, int strip) {
@@ -40,11 +43,16 @@ void main() {
 
   // Keep the core at least about a pixel wide so it doesn't alias, spreading the same light wider.
   float dist = max(-(uView * vec4(p.xyz, 1.0)).z, 0.01);
-  float core = p.w;
+  float t = float(k) / float(SEGMENTS);
+  // Narrow a little at the glass rather than ending in a square edge.
+  float core = p.w * mix(1.0, 0.6, smoothstep(0.9, 1.0, t));
   float minCore = MIN_CORE_PX * dist / uProjScale;
   float widen = max(minCore / core, 1.0);
   core *= widen;
 
+  bool branch = strip % (1 + BRANCHES) != 0;
+  vSpread = branch ? 0.45 + 0.55 * t : t;
+  vSeed = float(strip) * 7.31;
   vWorld = p.xyz + s * side * core * HALO;
   vAcross = side;
   vIntensity = q.x / widen;

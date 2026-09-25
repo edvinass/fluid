@@ -8,14 +8,14 @@ export const GLASS_RADIUS = 1;
 export const INNER_RADIUS = 0.975;
 /** Height of the top of the base; the glass below it sits inside the base. */
 export const BASE_TOP = -0.8;
-export const MAX_FILAMENTS = 16;
+export const MAX_FILAMENTS = 32;
 export const BRANCHES = 3;
 /** Points along every filament and branch. */
 export const POINTS = 41;
 export const STRIPS = MAX_FILAMENTS * (1 + BRANCHES);
 /** Lowest a filament's end may sit on the glass, as the y of its direction. The base hides the rest. */
 const MIN_END_Y = -0.55;
-const CORE_WIDTH = 0.0045;
+const CORE_WIDTH = 0.006;
 
 export interface PlasmaParams {
   count: number;
@@ -30,6 +30,13 @@ export interface PlasmaParams {
   tendrils: number;
   timeScale: number;
   paused: boolean;
+}
+
+export interface FilamentColors {
+  /** Colour of the thread itself. */
+  thread: Vec3;
+  /** Colour of the glow where it meets the electrode and the glass. */
+  glow: Vec3;
 }
 
 export interface Touch {
@@ -67,11 +74,11 @@ function noise(x: number): number {
   return (hash(i) * 2 - 1) * (1 - u) + (hash(i + 1) * 2 - 1) * u;
 }
 
-const OCTAVE_FREQ = [1.3, 3.1, 7.3, 17];
-const OCTAVE_SPEED = [0.35, 0.9, 2.2, 5];
-const OCTAVE_AMP = [1, 0.45, 0.22, 0.1];
+const OCTAVE_FREQ = [1.1, 2.3];
+const OCTAVE_SPEED = [2, 3.6];
+const OCTAVE_AMP = [1, 0.3];
 
-/** Fractal wiggle along a filament that travels outward from the electrode over time. */
+/** Smooth, slowly flowing bends along a filament that travel outward from the electrode over time. */
 function wiggle(t: number, time: number, seed: number): number {
   let sum = 0;
   for (let o = 0; o < OCTAVE_FREQ.length; o++) {
@@ -109,6 +116,7 @@ export class PlasmaSimulator {
   readonly ends = new Float32Array(MAX_FILAMENTS * 4);
   /** Per filament: where it leaves the electrode, and its brightness. */
   readonly roots = new Float32Array(MAX_FILAMENTS * 4);
+  /** Per filament: its glow colour. */
   readonly colors = new Float32Array(MAX_FILAMENTS * 3);
 
   private readonly filaments: Filament[] = [];
@@ -176,6 +184,7 @@ export class PlasmaSimulator {
     this.drain += ((touches.length > 0 ? 1 : 0) - this.drain) * (1 - Math.exp(-dt * 4));
 
     const wander = params.wander * (1 + boost);
+    const repulsion = 0.6 / Math.max(count, 1);
     for (let i = 0; i < MAX_FILAMENTS; i++) {
       const f = fil[i];
       const active = i < count;
@@ -191,6 +200,7 @@ export class PlasmaSimulator {
         f.vel.set(0, 0, 0);
         f.age = 0;
         f.life = 2 + Math.random() * 10;
+        f.seed = Math.random() * 100;
       }
 
       if (touch) {
@@ -199,15 +209,15 @@ export class PlasmaSimulator {
         f.vel.set(0, 0, 0);
       } else {
         const s = f.seed;
-        const tw = this.time * 0.6 * wander;
-        force.set(noise(tw + s), noise(tw + s + 17.3), noise(tw + s + 41.9)).multiplyScalar(1.4 * wander);
+        const tw = this.time * 2.6 * wander;
+        force.set(noise(tw + s), noise(tw + s + 17.3), noise(tw + s + 41.9)).multiplyScalar(5 * wander);
         force.y += 0.25;
         for (let j = 0; j < MAX_FILAMENTS; j++) {
           const g = fil[j];
           if (j === i || g.presence < 0.05) continue;
           tmp.subVectors(f.end, g.end);
           const d = tmp.length();
-          force.addScaledVector(tmp, (0.05 * g.presence) / (d * d * d + 0.02));
+          force.addScaledVector(tmp, (repulsion * g.presence) / (d * d * d + 0.02));
         }
         for (const t of touches) {
           touchDir.fromArray(t.point);
@@ -225,26 +235,27 @@ export class PlasmaSimulator {
         }
       }
 
-      tmp.set(noise(this.time * 0.8 + f.seed * 3.1), noise(this.time * 0.8 + f.seed * 5.7), noise(this.time * 0.8 + f.seed * 7.3));
+      const rt = this.time * 3.2 * wander;
+      tmp.set(noise(rt + f.seed * 3.1), noise(rt + f.seed * 5.7), noise(rt + f.seed * 7.3));
       tmp2.copy(f.end).addScaledVector(tmp, 0.35 * (1 - f.capture * 0.7)).normalize();
-      f.root.lerp(tmp2, 1 - Math.exp(-dt * 2.5)).normalize();
+      f.root.lerp(tmp2, 1 - Math.exp(-dt * 7)).normalize();
     }
   }
 
   /** Rebuilds the filament paths for rendering, each coloured by `colorOf(filament index)`. */
-  writePaths(params: PlasmaParams, colorOf: (index: number, seed: number) => Vec3, boost: number): void {
+  writePaths(params: PlasmaParams, colorOf: (index: number, seed: number) => FilamentColors, boost: number): void {
     const out = this.paths;
     out.fill(0);
     const time = this.time;
     const wander = params.wander * (1 + boost);
-    const flickerTime = time * 23;
+    const flickerTime = time * 7;
     const voltage = params.voltage * (1 + boost * 1.5);
 
     for (let i = 0; i < MAX_FILAMENTS; i++) {
       const f = this.filaments[i];
       const e = i * 4;
-      const color = colorOf(i, f.seed);
-      this.colors.set(color, i * 3);
+      const colors = colorOf(i, f.seed);
+      this.colors.set(colors.glow, i * 3);
       const flick = 1 - params.flicker * 0.25 * (0.5 + 0.5 * noise(flickerTime + f.seed * 9.1));
       const brightness = f.presence * voltage * flick * (1 - 0.45 * this.drain * (1 - f.capture)) * (1 + 1.6 * f.capture);
       this.ends.set([f.end.x, f.end.y, f.end.z, brightness], e);
@@ -258,25 +269,27 @@ export class PlasmaSimulator {
       f.u.normalize();
       v.crossVectors(axis, f.u);
 
-      const amp = 0.12 * params.twist * (1 + boost * 0.8) * (1 - 0.6 * f.capture);
+      const amp = 0.16 * params.twist * (1 + boost * 0.8) * (1 - 0.6 * f.capture);
       const width = CORE_WIDTH * (1 + 0.7 * f.capture);
       const mainStrip = i * (1 + BRANCHES);
       const wt = time * wander;
+      const mainEnd = (POINTS - 1) * 8 + mainStrip * POINTS * 8;
       for (let k = 0; k < POINTS; k++) {
         const t = k / (POINTS - 1);
         point.copy(f.root).lerp(f.end, t).normalize().multiplyScalar(ELECTRODE_RADIUS + (INNER_RADIUS - ELECTRODE_RADIUS) * t);
         const env = Math.pow(Math.sin(Math.PI * t), 0.7) * amp;
         point.addScaledVector(f.u, wiggle(t, wt, f.seed) * env).addScaledVector(v, wiggle(t, wt, f.seed + 17) * env);
-        this.writePoint(mainStrip, k, point, width * (0.8 + 0.7 * t), brightness * (1.15 - 0.4 * t), color);
+        this.writePoint(mainStrip, k, point, width * (0.9 + 0.5 * t), brightness * (1.1 - 0.3 * t), colors, t);
       }
 
+      // Forks peel smoothly off the main thread and bow out to their own spot on the glass.
       for (let b = 0; b < BRANCHES; b++) {
         const bs = f.seed * 7.1 + b * 3.7;
-        const kb = Math.round((0.55 + 0.3 * hash(bs)) * (POINTS - 1));
-        const base = mainStrip * POINTS + kb;
-        start.set(out[base * 8], out[base * 8 + 1], out[base * 8 + 2]);
+        // Only some filaments fork, and only close to the glass.
+        if (hash(bs + 3) > 0.3) continue;
+        const tb = 0.78 + 0.12 * hash(bs);
         const phi = hash(bs + 1) * Math.PI * 2 + noise(time * 0.3 * wander + bs) * 1.5;
-        const spread = (0.1 + 0.2 * hash(bs + 2)) * params.tendrils * (1 - 0.75 * f.capture) * (0.8 + 0.3 * noise(time * 0.7 + bs));
+        const spread = (0.035 + 0.07 * hash(bs + 2)) * params.tendrils * (1 - 0.75 * f.capture) * (0.8 + 0.3 * noise(time * 0.7 + bs));
         branchEnd
           .copy(f.end)
           .addScaledVector(f.u, Math.cos(phi) * spread)
@@ -284,21 +297,32 @@ export class PlasmaSimulator {
           .normalize();
         if (branchEnd.y < MIN_END_Y - 0.1) branchEnd.setY(MIN_END_Y - 0.1).normalize();
         branchEnd.multiplyScalar(INNER_RADIUS);
-        const on = Math.min(1, Math.max(0, 0.6 + noise(time * 3 * params.flicker + bs * 2.3)));
+        branchEnd.x -= out[mainEnd];
+        branchEnd.y -= out[mainEnd + 1];
+        branchEnd.z -= out[mainEnd + 2];
+        const on = Math.min(1, Math.max(0, 0.7 + noise(time * 1.5 * params.flicker + bs * 2.3)));
         const strip = mainStrip + 1 + b;
         for (let k = 0; k < POINTS; k++) {
-          const t = k / (POINTS - 1);
-          point.lerpVectors(start, branchEnd, t);
-          const env = Math.sin(Math.PI * t) * amp * 0.3;
-          point.addScaledVector(f.u, wiggle(t * 0.6, wt, bs) * env).addScaledVector(v, wiggle(t * 0.6, wt, bs + 5) * env);
-          const fadeIn = Math.min(1, t * 5);
-          this.writePoint(strip, k, point, width * 0.6, brightness * 0.45 * on * fadeIn, color);
+          const s = k / (POINTS - 1);
+          const t = tb + (1 - tb) * s;
+          const along = t * (POINTS - 1);
+          const k0 = Math.min(Math.floor(along), POINTS - 2);
+          const o0 = (mainStrip * POINTS + k0) * 8;
+          const w = along - k0;
+          start.set(out[o0], out[o0 + 1], out[o0 + 2]);
+          point.set(out[o0 + 8], out[o0 + 9], out[o0 + 10]);
+          point.lerp(start, 1 - w).addScaledVector(branchEnd, s * s);
+          const bow = Math.sin(Math.PI * s) * amp * 0.25 * s;
+          point.addScaledVector(f.u, wiggle(s * 0.5, wt, bs) * bow).addScaledVector(v, wiggle(s * 0.5, wt, bs + 5) * bow);
+          const fadeIn = s * s * (3 - 2 * s);
+          this.writePoint(strip, k, point, width * (0.8 + 0.4 * s), brightness * 0.6 * on * Math.min(1, fadeIn * 2), colors, t);
         }
       }
     }
   }
 
-  private writePoint(strip: number, k: number, p: Vector3, width: number, intensity: number, color: Vec3): void {
+  /** Threads take on the glow colour where they meet the electrode and the glass. */
+  private writePoint(strip: number, k: number, p: Vector3, width: number, intensity: number, colors: FilamentColors, t: number): void {
     const r = p.length();
     if (r > INNER_RADIUS) p.multiplyScalar(INNER_RADIUS / r);
     else if (r < ELECTRODE_RADIUS) p.multiplyScalar(ELECTRODE_RADIUS / r);
@@ -310,8 +334,10 @@ export class PlasmaSimulator {
     out[o + 2] = p.z;
     out[o + 3] = width;
     out[o + 4] = intensity;
-    out[o + 5] = color[0];
-    out[o + 6] = color[1];
-    out[o + 7] = color[2];
+    const g = 0.55 * (1 - Math.min(1, t / 0.12)) + 0.45 * Math.max(0, (t - 0.85) / 0.15);
+    const { thread, glow } = colors;
+    out[o + 5] = thread[0] + (glow[0] - thread[0]) * g;
+    out[o + 6] = thread[1] + (glow[1] - thread[1]) * g;
+    out[o + 7] = thread[2] + (glow[2] - thread[2]) * g;
   }
 }

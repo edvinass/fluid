@@ -21,7 +21,7 @@ export function createPlasmaUI(settings: PlasmaSettings, actions: PlasmaUIAction
   globe.add(settings.sim, 'voltage', 0.2, 2, 0.01).name('Voltage');
   globe.add(settings.sim, 'twist', 0, 2.5, 0.01).name('Twistiness');
   globe.add(settings.sim, 'tendrils', 0, 2.5, 0.01).name('Tendrils');
-  globe.add(settings.sim, 'wander', 0, 3, 0.01).name('Drift');
+  globe.add(settings.sim, 'wander', 0, 5, 0.01).name('Drift');
   globe.add(settings.sim, 'flicker', 0, 2, 0.01).name('Flicker');
   globe.add(settings, 'sound').name('React to sound (M)').onChange(actions.setSound).listen();
   globe.add({ reset: actions.reset }, 'reset').name('Restart (R)');

@@ -3,7 +3,7 @@ import { Program } from '../gl/program';
 import { RenderTarget, rgba16f, rgba32f } from '../gl/target';
 import bloomFs from '../fire/shaders/bloom.frag.glsl?raw';
 import type { ViewState } from '../render/camera';
-import { BASE_TOP, ELECTRODE_RADIUS, GLASS_RADIUS, MAX_FILAMENTS, POINTS, STRIPS, type PlasmaSimulator, type Vec3 } from './PlasmaSimulator';
+import { BASE_TOP, BRANCHES, ELECTRODE_RADIUS, GLASS_RADIUS, MAX_FILAMENTS, POINTS, STRIPS, type PlasmaSimulator, type Vec3 } from './PlasmaSimulator';
 import commonSrc from './shaders/plasmaCommon.glsl?raw';
 import sceneFs from './shaders/scene.frag.glsl?raw';
 import filamentVs from './shaders/filament.vert.glsl?raw';
@@ -23,6 +23,7 @@ const HEADER = `#version 300 es
 precision highp float;
 #define MAX_FILAMENTS ${MAX_FILAMENTS}
 #define POINTS ${POINTS}
+#define BRANCHES ${BRANCHES}
 #define ELECTRODE_RADIUS ${ELECTRODE_RADIUS.toFixed(4)}
 #define GLASS_RADIUS ${GLASS_RADIUS.toFixed(4)}
 #define BASE_TOP ${BASE_TOP.toFixed(4)}
@@ -82,7 +83,7 @@ export class PlasmaRenderer {
 
     let total = 0;
     for (let i = 0; i < MAX_FILAMENTS; i++) total += sim.ends[i * 4 + 3];
-    const light = look.roomLight * (0.25 + 0.08 * total);
+    const light = look.roomLight * (0.2 + 0.025 * total);
     const glow = gas.map((c) => c * light);
     const camera = (p: Program) =>
       p
@@ -97,7 +98,7 @@ export class PlasmaRenderer {
       .set('uEnds', sim.ends)
       .set('uRoots', sim.roots)
       .set('uSpotColors', sim.colors)
-      .set('uGas', gas.map((c) => c * (0.3 + 0.05 * total)))
+      .set('uGas', gas.map((c) => c * (0.25 + 0.012 * total)))
       .set('uGlow', glow);
     drawFullscreen(gl);
 

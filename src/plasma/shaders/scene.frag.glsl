@@ -107,15 +107,15 @@ vec3 shadeBase(vec3 p, vec3 rd) {
 vec3 shadeElectrode(vec3 p, vec3 rd, vec3 gas) {
   vec3 n = p / ELECTRODE_RADIUS;
   float swirl = noise3(n * 5.0 + vec3(0.0, uTime * 1.3, 0.0)) * 0.6 + noise3(n * 11.0 - uTime * 2.0) * 0.4;
-  vec3 col = gas * (0.9 + 1.4 * swirl);
+  vec3 col = gas * (1.2 + 1.6 * swirl);
   for (int i = 0; i < MAX_FILAMENTS; i++) {
     float w = uRoots[i].w;
     if (w <= 0.0) continue;
     float d = 1.0 - dot(n, uRoots[i].xyz);
-    col += mix(uSpotColors[i], vec3(1.0), 0.6) * w * (exp(-d * 40.0) * 5.0 + exp(-d * 6.0) * 0.6);
+    col += mix(uSpotColors[i], vec3(1.0), 0.3) * w * (exp(-d * 40.0) * 1.6 + exp(-d * 6.0) * 0.3);
   }
   float rim = 1.0 - abs(dot(n, rd));
-  return col * (0.7 + 0.8 * rim);
+  return col * (0.6 + 0.9 * rim);
 }
 
 vec3 glassSpots(vec3 p) {
@@ -125,7 +125,7 @@ vec3 glassSpots(vec3 p) {
     float w = uEnds[i].w;
     if (w <= 0.0) continue;
     float d = 1.0 - dot(n, uEnds[i].xyz);
-    col += uSpotColors[i] * w * (exp(-d * 2500.0) * 3.0 + exp(-d * 250.0) * 0.5 + exp(-d * 30.0) * 0.04);
+    col += uSpotColors[i] * w * (exp(-d * 700.0) * 0.5 + exp(-d * 120.0) * 0.2 + exp(-d * 25.0) * 0.015);
   }
   return col;
 }
@@ -139,7 +139,7 @@ vec3 haze(vec3 ro, vec3 rd, float t0, float t1, vec3 gas) {
   float b = (t1 - tc) / S;
   // erf(x) ~ tanh(1.2 x), close enough for a glow.
   float g = exp(-d2 / (S * S)) * S * 0.886 * (tanh(1.2 * b) - tanh(1.2 * a));
-  return gas * (g * 0.35 + (t1 - t0) * 0.012);
+  return gas * (g * 0.22 + (t1 - t0) * 0.006);
 }
 
 void main() {
