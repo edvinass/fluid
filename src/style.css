@@ -265,18 +265,6 @@ body.theme-light .palette button.text.selected {
   background: rgba(0, 0, 0, 0.08);
 }
 
-@media (max-width: 640px) {
-  .palette {
-    bottom: 12px;
-    gap: 6px;
-    padding: 6px 10px;
-  }
-  .swatch {
-    width: 22px;
-    height: 22px;
-  }
-}
-
 .stats {
   position: fixed;
   bottom: 16px;
@@ -369,11 +357,85 @@ kbd {
   backdrop-filter: blur(8px);
 }
 
-@media (max-width: 640px) {
-  .help {
-    display: none;
+/* Leave room for the settings panel so the page switcher wraps instead of running under it. */
+@media (max-width: 900px) {
+  .title {
+    right: 275px;
+  }
+  .switcher {
+    flex-wrap: wrap;
+    border-radius: 18px;
+  }
+}
+
+/* Phones, in portrait or landscape. */
+@media (max-width: 640px), (max-height: 500px) and (pointer: coarse) {
+  .title {
+    top: calc(10px + env(safe-area-inset-top));
+    left: calc(12px + env(safe-area-inset-left));
+    right: calc(12px + env(safe-area-inset-right));
   }
   .title h1 {
     font-size: 20px;
+  }
+  .title p {
+    font-size: 12px;
+  }
+  .switcher {
+    display: flex;
+    margin-top: 8px;
+  }
+  .switcher a {
+    padding: 6px 10px;
+  }
+
+  .lil-gui.lil-root.lil-auto-place {
+    --width: min(300px, calc(100vw - 16px));
+    top: calc(6px + env(safe-area-inset-top));
+    right: calc(8px + env(safe-area-inset-right));
+    max-height: calc(100% - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+  .lil-gui.lil-root.lil-auto-place.lil-closed {
+    width: auto;
+  }
+
+  .palette {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    max-width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right));
+    gap: 6px;
+    padding: 6px 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .palette::-webkit-scrollbar {
+    display: none;
+  }
+  .palette > * {
+    flex-shrink: 0;
+  }
+  .palette button.text {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+  .palette button.text.selected {
+    padding: 8px 10px;
+  }
+  .swatch {
+    width: 28px;
+    height: 28px;
+  }
+
+  .stats {
+    right: calc(8px + env(safe-area-inset-right));
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  body:has(.palette) .stats {
+    bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .help {
+    display: none;
   }
 }
