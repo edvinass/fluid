@@ -136,6 +136,17 @@ body.theme-honey .title h1 {
   background-clip: text;
 }
 
+body.theme-sand {
+  --accent: #e2b877;
+  background: #0f0b08;
+}
+
+body.theme-sand .title h1 {
+  background: linear-gradient(90deg, #f3d9a6, #d9b27a, #eef4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 body.theme-light .switcher a.active {
   background: rgba(0, 0, 0, 0.08);
 }

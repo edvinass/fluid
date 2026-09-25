@@ -3,24 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="description" content="Real-time 3D honey: drizzle it, dip into it and drop blobs of it, with syrup, caramel and chocolate too, simulated on your GPU." />
-    <title>Honey | 3D Fluid Simulation</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 3c3 7 9 11 9 17a9 9 0 0 1-18 0c0-6 6-10 9-17z' fill='%23e8a317'/></svg>" />
+    <meta name="description" content="Real-time 3D sand and snow: knock down a sandcastle, pelt a snowman with snowballs and pour sand, snow and jelly, simulated on your GPU." />
+    <title>Sand &amp; Snow | 3D Fluid Simulation</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M3 27 L16 8 L29 27 Z' fill='%23d9b27a'/></svg>" />
   </head>
-  <body class="theme-honey">
+  <body class="theme-sand">
     <canvas id="app"></canvas>
 
     <header class="title">
-      <h1>Honey</h1>
-      <p>Thick, sticky liquids, simulated in 3D on your GPU</p>
+      <h1>Sand &amp; Snow</h1>
+      <p>Grains that pile, crumble and pack, simulated in 3D on your GPU</p>
       <nav class="switcher">
         <a href="./">Water</a>
         <a href="./paint.html">Paint</a>
         <a href="./wind.html">Wind</a>
         <a href="./fire.html">Fire</a>
         <a href="./bubble.html">Bubble</a>
-        <a href="./honey.html" class="active" aria-current="page">Honey</a>
-        <a href="./sand.html">Sand</a>
+        <a href="./honey.html">Honey</a>
+        <a href="./sand.html" class="active" aria-current="page">Sand</a>
       </nav>
     </header>
 
@@ -29,15 +29,15 @@
     <aside id="help" class="help">
       <button id="help-toggle" class="help-toggle" aria-expanded="true">Controls</button>
       <ul>
-        <li><kbd>Drag</kbd> move the drizzle, lift the dipper, or drop a blob</li>
+        <li><kbd>Click</kbd> throw a ball or snowball, or hold to pour</li>
+        <li><kbd>Shift</kbd> + <kbd>Drag</kbd> plow through with the ball</li>
         <li><kbd>Right drag</kbd> or <kbd>Ctrl</kbd> + <kbd>Drag</kbd> orbit</li>
         <li><kbd>Scroll</kbd> zoom</li>
-        <li><kbd>1</kbd>-<kbd>3</kbd> scene, <kbd>T</kbd> twirl the dipper</li>
-        <li><kbd>C</kbd> start again, <kbd>Space</kbd> pause</li>
+        <li><kbd>1</kbd>-<kbd>3</kbd> scene, <kbd>C</kbd> start again, <kbd>Space</kbd> pause</li>
       </ul>
     </aside>
 
-    <div id="toolbar" class="palette" role="toolbar" aria-label="Scene and liquid"></div>
+    <div id="toolbar" class="palette" role="toolbar" aria-label="Scene and material"></div>
 
     <div id="error" class="error" hidden>
       <h2>Your browser can't run this simulation</h2>
@@ -45,6 +45,6 @@
       <p>Try a recent version of Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
     </div>
 
-    <script type="module" src="/src/honey/main.ts"></script>
+    <script type="module" src="/src/sand/main.ts"></script>
   </body>
 </html>

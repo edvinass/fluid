@@ -1,6 +1,6 @@
 # Fluid
 
-Six real-time, interactive 3D fluid visualisations that run in the browser:
+Seven real-time, interactive 3D fluid visualisations that run in the browser:
 
 - **Water** (`index.html`): a tank of water made of particles that you can slosh, stir and tilt.
 - **Paint** (`paint.html`): pour coloured paint into a glass tank of water and watch it sink, curl and mix.
@@ -8,6 +8,7 @@ Six real-time, interactive 3D fluid visualisations that run in the browser:
 - **Fire** (`fire.html`): a campfire, a gas burner, fireballs and a torch you can wield, at night.
 - **Bubble** (`bubble.html`): a soap bubble whose film swirls and shimmers with interference colours until it pops.
 - **Honey** (`honey.html`): drizzle honey onto a plate, lift a honey dipper out of a bowl, or drop blobs of syrup, caramel and chocolate.
+- **Sand & Snow** (`sand.html`): knock down a sandcastle, pelt a snowman with snowballs, or pour sand, wet sand, snow and jelly into a sandbox.
 
 Switch between them with the toggle in the top-left corner.
 
@@ -166,6 +167,27 @@ Thick liquids are hard for the methods the other pages use, so this page uses th
 
 Pressure comes from how much each particle's volume has changed, which keeps the liquid nearly incompressible. The table, plate, bowl and dipper are ray marched with soft shadows, and the liquid is drawn with the water page's screen-space technique. The liquid is shaded as a clear, amber liquid. What's behind it is bent by refraction and tinted by Beer-Lambert absorption, so thin films glow gold and thick pools turn deep amber. Domes of liquid focus bright caustics onto the dish, and the surface reflects the room's windows. The "Resolution" setting sets the grid (48 to 96 cells across) and how many particles fit, from 65k to 393k. Pouring stops when the particle budget is full.
 
+## Sand & Snow
+
+| Input | Action |
+| --- | --- |
+| Click | Sandcastle: throw a ball. Snowman: throw a snowball. Pour: hold to pour |
+| Shift + drag | Plow through with the ball |
+| Right drag or Ctrl + drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| 1 to 3 | Pour, sandcastle or snowman |
+| C | Start again |
+| Space | Pause or resume |
+
+The swatches in the bottom bar pick what to pour: dry sand, wet sand, snow or jelly. Picking one switches to pouring without clearing the sandbox, so you can bury the snowman in sand. Dry sand pours into cones, wet sand stands in steeper clumps, snow sticks together and breaks into chunks, and jelly cubes wobble. When nobody is interacting, the pour scene draws loops of sand, a ball flies into the castle every few seconds, and snowballs hit the snowman. Each scene rebuilds itself after a few rounds.
+
+The solver is the honey page's MPM with one change: each particle also tracks how it has been deformed (its deformation gradient), and the stress comes from that instead of from volume alone. After moving the particles, a second pass takes the singular value decomposition of each particle's deformation and applies its material's plasticity:
+
+- Sand, wet sand and snow use Drucker-Prager plasticity in Hencky strain. The grains can't be pulled apart and slide over each other once shear beats friction times pressure. Wet sand and snow have some cohesion, so they hold together until pulled apart, with snow the stickiest.
+- Jelly, and the snowman's coal and carrot, are elastic and spring back.
+
+The grid applies Coulomb friction where grains press against the sandbox or the ball. Substeps are added automatically as the stiffness or the resolution goes up. The table, sandbox and ball are ray marched. The particles are drawn as spheres whose depth is smoothed into a surface. For sand, the spheres are twice as big and overlap heavily, and are pushed back to keep the piles the right size, so they merge into smooth slopes rather than a heap of balls. Real sand grains are far smaller than the simulated particles, so the shading covers sand in tiny procedural grains: cells of a 3D Voronoi pattern anchored to the nearest particle, so they move with the sand. Each grain is a rounded pebble with its own mineral colour (mostly tan, with some pale, rusty and dark grains), darkened where it meets its neighbours. "Grain size" in the rendering settings changes how fine they are, and grains smaller than a pixel fade to their average colour. Snow gets softer, finer bumps. A shadow map rendered from the light lets piles shadow each other, and crevices are darkened. Snow is lit softly, goes blue in the shade and glints. The "Resolution" setting sets the grid (40 to 80 cells across) and how many grains fit, from 49k to 328k.
+
 ## Project layout
 
 - `src/main.ts` sets up the water page and runs its frame loop.
@@ -173,6 +195,7 @@ Pressure comes from how much each particle's volume has changed, which keeps the
 - `src/fire/` contains the fire page: the combustion solver, the scenes and scenery, the flame renderer with bloom, and the torch interaction.
 - `src/bubble/` contains the bubble page: the film solver on cube maps, the thin-film ray tracer, the stirring and popping interaction and the lifecycle of each bubble.
 - `src/honey/` contains the honey page: the MPM solver, the scenes and liquids, the table-top renderer and the dipper interaction.
+- `src/sand/` contains the sand and snow page: the elastoplastic MPM solver and its materials, the sandcastle and snowman builders, the shadowed grain renderer, and the throwing, pouring and plowing interaction.
 - `src/wind/` contains the wind tunnel page: the tunnel solver, the object shapes, the smoke and object renderer, and the drag and smoke-wand interaction.
 - `src/gl/` holds small WebGL2 helpers for programs, textures and framebuffers.
 - `src/sim/` contains the SPH solver, the bitonic sort, the scene presets and the simulation shaders.

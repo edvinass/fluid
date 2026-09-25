@@ -13,6 +13,7 @@ export default defineConfig({
         fire: resolve(__dirname, 'fire.html'),
         bubble: resolve(__dirname, 'bubble.html'),
         honey: resolve(__dirname, 'honey.html'),
+        sand: resolve(__dirname, 'sand.html'),
       },
     },
   },
