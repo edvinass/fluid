@@ -40,6 +40,25 @@ export interface PaintParams {
 
 export const MAX_SOURCES = 4;
 
+export interface GridLayout {
+  res: Vec3;
+  cols: number;
+  cellSize: number;
+  /** Size of the 2D atlas texture holding all z-slices. */
+  width: number;
+  height: number;
+}
+
+/** Grid dimensions and atlas layout for a tank with `cellsX` cubic cells across its width. */
+export function gridLayout(boxHalf: Vec3, cellsX: number): GridLayout {
+  const [hx, hy, hz] = boxHalf;
+  const cellSize = (2 * hx) / cellsX;
+  const res: Vec3 = [cellsX, Math.round((2 * hy) / cellSize), Math.round((2 * hz) / cellSize)];
+  const cols = Math.ceil(Math.sqrt(res[2]));
+  const rows = Math.ceil(res[2] / cols);
+  return { res, cols, cellSize, width: cols * res[0], height: rows * res[1] };
+}
+
 /**
  * Incompressible 3D fluid on a uniform grid (stable fluids), carrying coloured paint. Volumes
  * are stored as 2D atlases of z-slices so each solver step is a single full-screen pass.
@@ -93,13 +112,12 @@ export class PaintSimulator {
 
   /** (Re)allocates the grid with `cellsX` cells across the tank width. */
   reset(cellsX: number): void {
-    const [hx, hy, hz] = this.boxHalf;
-    this.cellSize = (2 * hx) / cellsX;
-    this.res = [cellsX, Math.round((2 * hy) / this.cellSize), Math.round((2 * hz) / this.cellSize)];
-    this.cols = Math.ceil(Math.sqrt(this.res[2]));
-    const rows = Math.ceil(this.res[2] / this.cols);
-    const w = this.cols * this.res[0];
-    const h = rows * this.res[1];
+    const layout = gridLayout(this.boxHalf, cellsX);
+    this.cellSize = layout.cellSize;
+    this.res = layout.res;
+    this.cols = layout.cols;
+    const w = layout.width;
+    const h = layout.height;
 
     this.disposeTargets();
     const gl = this.gl;

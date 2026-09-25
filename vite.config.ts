@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         water: resolve(__dirname, 'index.html'),
         paint: resolve(__dirname, 'paint.html'),
+        wind: resolve(__dirname, 'wind.html'),
       },
     },
   },

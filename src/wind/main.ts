@@ -1,19 +1,22 @@
 import '../style.css';
 import { PerspectiveCamera, Quaternion } from 'three';
 import { createContext, UnsupportedError } from '../gl/context';
+import { THEMES } from '../paint/PaintRenderer';
+import { gridLayout } from '../paint/PaintSimulator';
 import { buildViewState } from '../render/camera';
-import { AutoPour } from './autoPour';
-import { PaintInteraction } from './interaction';
-import { Palette } from './palette';
-import { PaintRenderer, THEMES } from './PaintRenderer';
-import { gridLayout, PaintSimulator, type Vec3 } from './PaintSimulator';
-import { createPaintUI, QUALITY_LEVELS, type PaintSettings } from './ui';
+import { WindInteraction } from './interaction';
+import { Obstacle, SHAPES, type ShapeName, type Vec3 } from './obstacle';
+import { ShapeBar } from './shapeBar';
+import { createWindUI, QUALITY_LEVELS, type WindSettings } from './ui';
+import { WindRenderer } from './WindRenderer';
+import { WindSimulator, type SmokeColour } from './WindSimulator';
 
-const BOX_HALF: Vec3 = [0.75, 0.95, 0.75];
+const BOX_HALF: Vec3 = [1.6, 0.5, 0.6];
 const MAX_DEVICE_PIXEL_RATIO = 2;
-const INTRO_SECONDS = 3.5;
 const AUTO_QUALITY_MIN_FPS = 45;
 const QUALITY_ORDER = Object.keys(QUALITY_LEVELS);
+const SMOKE_COLOURS: SmokeColour[] = ['White', 'Rainbow', 'Speed'];
+const DEFAULT_ANGLE: Partial<Record<ShapeName, number>> = { Wing: 8 };
 
 function showError(message: string): void {
   document.getElementById('error-message')!.textContent = message;
@@ -31,39 +34,46 @@ function start(): void {
   }
 
   const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 700;
-  const settings: PaintSettings = {
-    quality: mobile ? 'Medium' : 'Ultra',
+  const initialQuality = mobile ? 'Medium' : 'High';
+  const settings: WindSettings = {
+    quality: initialQuality,
     autoQuality: true,
     sim: {
+      wind: 1.2,
+      turbulence: 0.03,
+      swirl: 2.5,
       timeScale: 1,
-      swirl: 3,
-      weight: 0.8,
-      fade: 0.01,
-      drag: 0.15,
-      pressureIterations: 28,
+      pressureIterations: 32,
       paused: false,
     },
-    pour: {
-      rate: 8,
-      width: 0.045,
-      speed: 0.9,
-      autoPour: true,
+    object: { shape: 'Wing', angle: DEFAULT_ANGLE.Wing ?? 0, yaw: 0, size: 1 },
+    smoke: {
+      rake: 'Vertical',
+      streams: 10,
+      width: 0.01,
+      amount: 1,
+      colour: 'Rainbow',
+      pulse: false,
+      fade: 0.05,
     },
     look: {
-      theme: 'light',
-      density: 45,
-      shadow: 1,
-      renderScale: QUALITY_LEVELS[mobile ? 'Medium' : 'Ultra'].renderScale,
+      theme: 'dark',
+      density: 60,
+      shadow: 0.6,
+      pressure: false,
+      renderScale: QUALITY_LEVELS[initialQuality].renderScale,
     },
   };
 
   const camera = new PerspectiveCamera(40, 1, 0.05, 100);
-  camera.position.set(2.6, 1.3, 3.4);
+  camera.position.set(1.0, 1.25, 3.7);
 
-  const sim = new PaintSimulator(gl, BOX_HALF);
-  const renderer = new PaintRenderer(gl, BOX_HALF);
-  const interaction = new PaintInteraction(camera, canvas, BOX_HALF, settings.pour);
-  interaction.controls.target.set(0, -0.1, 0);
+  const sim = new WindSimulator(gl, BOX_HALF);
+  const renderer = new WindRenderer(gl, BOX_HALF);
+  const obstacle = new Obstacle(BOX_HALF);
+  obstacle.resetPosition(settings.object);
+  const interaction = new WindInteraction(camera, canvas, BOX_HALF, obstacle, settings.object);
+  interaction.controls.target.set(0, -0.12, 0);
   interaction.controls.update();
 
   const maxTexture = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
@@ -75,7 +85,7 @@ function start(): void {
   let lastQualityChange = performance.now();
   let slowSamples = 0;
   const setQuality = () => {
-    sim.reset(QUALITY_LEVELS[settings.quality].cells);
+    sim.reset(QUALITY_LEVELS[settings.quality].cells, settings.sim.wind);
     lastQualityChange = performance.now();
     slowSamples = 0;
   };
@@ -87,15 +97,30 @@ function start(): void {
   };
   setQuality();
 
-  const clear = () => sim.clear();
+  const shapeBar = new ShapeBar(document.getElementById('shapes')!, (shape) => {
+    settings.object.shape = shape;
+    setShape();
+  });
+  const setShape = () => {
+    settings.object.angle = DEFAULT_ANGLE[settings.object.shape] ?? 0;
+    settings.object.yaw = 0;
+    obstacle.resetPosition(settings.object);
+    shapeBar.select(settings.object.shape);
+  };
+  shapeBar.select(settings.object.shape);
+  const resetFlow = () => sim.clear(settings.sim.wind);
   const setTheme = () => {
     document.body.className = THEMES[settings.look.theme].bodyClass;
   };
-  const palette = new Palette(document.getElementById('palette')!, clear);
-  const startTime = performance.now() / 1000;
-  const autoPour = new AutoPour(BOX_HALF, settings.pour, () => palette.random(), startTime);
+  setTheme();
 
-  createPaintUI(settings, qualityOrder, { chooseQuality, clear, setTheme });
+  createWindUI(settings, qualityOrder, {
+    chooseQuality,
+    setShape,
+    resetObject: () => obstacle.resetPosition(settings.object),
+    resetFlow,
+    setTheme,
+  });
 
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
@@ -113,11 +138,23 @@ function start(): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
-    if (e.code === 'Space') {
+    const shape = SHAPES[Number(e.key) - 1];
+    if (shape) {
+      settings.object.shape = shape;
+      setShape();
+    } else if (e.code === 'Space') {
       settings.sim.paused = !settings.sim.paused;
       e.preventDefault();
-    } else if (e.code === 'KeyC') {
-      clear();
+    } else if (e.code === 'KeyR') {
+      resetFlow();
+    } else if (e.code === 'KeyP') {
+      settings.look.pressure = !settings.look.pressure;
+    } else if (e.code === 'KeyS') {
+      const i = SMOKE_COLOURS.indexOf(settings.smoke.colour);
+      settings.smoke.colour = SMOKE_COLOURS[(i + 1) % SMOKE_COLOURS.length];
+    } else if (e.code === 'BracketLeft' || e.code === 'BracketRight') {
+      const delta = e.code === 'BracketLeft' ? -2 : 2;
+      settings.object.angle = Math.max(-30, Math.min(30, settings.object.angle + delta));
     }
   });
 
@@ -128,7 +165,7 @@ function start(): void {
   });
 
   if (new URLSearchParams(location.search).has('debug')) {
-    Object.assign(window, { paint: { sim, settings, interaction } });
+    Object.assign(window, { wind: { sim, settings, obstacle, interaction, setQuality } });
   }
 
   const statsEl = document.getElementById('stats')!;
@@ -141,20 +178,22 @@ function start(): void {
   const frame = (nowMs: number) => {
     const realDt = Math.min((nowMs - last) / 1000, 1 / 20);
     last = nowMs;
-    const now = nowMs / 1000;
 
-    interaction.update(realDt, now);
+    interaction.update(realDt);
+    obstacle.update(settings.object, realDt);
     if (!settings.sim.paused) {
-      const introOver = now - startTime > INTRO_SECONDS;
-      const sources = [
-        ...interaction.sources(palette.current(now)),
-        ...autoPour.sources(now, interaction.idleTime, introOver),
-      ];
-      sim.step(realDt * settings.sim.timeScale, settings.sim, sources);
+      sim.step(realDt * settings.sim.timeScale, settings.sim, settings.smoke, obstacle, interaction.wand());
     }
 
     const view = buildViewState(camera, identity, canvas.width, canvas.height);
-    renderer.render(view, sim, { ...settings.look, theme: THEMES[settings.look.theme] }, frameIndex++);
+    renderer.render(
+      view,
+      sim,
+      obstacle,
+      { ...settings.look, theme: THEMES[settings.look.theme], colour: settings.smoke.colour },
+      settings.sim.wind,
+      frameIndex++,
+    );
 
     frames++;
     if (nowMs - fpsTime > 500) {

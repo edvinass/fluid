@@ -1,6 +1,7 @@
-import { bindEmptyVao, drawFullscreen, FULLSCREEN_VS } from '../gl/context';
+import { drawFullscreen, FULLSCREEN_VS } from '../gl/context';
 import { Program } from '../gl/program';
 import { RenderTarget, rgba16f, rgba8 } from '../gl/target';
+import { BoxEdges } from '../render/BoxEdges';
 import type { ViewState } from '../render/camera';
 import type { PaintSimulator, Vec3 } from './PaintSimulator';
 import gridSrc from './shaders/grid.glsl?raw';
@@ -59,45 +60,12 @@ const SUN_DIR: Vec3 = (() => {
   return [v[0] / l, v[1] / l, v[2] / l];
 })();
 
-const EDGES_VS = `#version 300 es
-uniform mat4 uModelView;
-uniform mat4 uProj;
-uniform vec3 uBoxHalf;
-uniform vec3 uCamPos;
-uniform int uFront;
-const int EDGES[24] = int[24](0,1, 1,3, 3,2, 2,0, 4,5, 5,7, 7,6, 6,4, 0,4, 1,5, 2,6, 3,7);
-vec3 cornerPos(int c) {
-  return vec3(c & 1, (c >> 1) & 1, (c >> 2) & 1) * 2.0 - 1.0;
-}
-// An edge is in front if either face touching it faces the camera. Edges not in the requested
-// set are moved outside the clip volume.
-void main() {
-  int e = gl_VertexID / 2;
-  int a = EDGES[e * 2];
-  int axis = a ^ EDGES[e * 2 + 1];
-  vec3 s = cornerPos(a);
-  bool front = false;
-  for (int k = 0; k < 3; k++) {
-    if (((axis >> k) & 1) == 0 && uCamPos[k] * s[k] > uBoxHalf[k]) front = true;
-  }
-  vec3 c = cornerPos(EDGES[gl_VertexID]);
-  gl_Position = (front == (uFront == 1)) ? uProj * uModelView * vec4(c * uBoxHalf, 1.0) : vec4(2.0, 2.0, 2.0, 1.0);
-}
-`;
-
-const EDGES_FS = `#version 300 es
-precision highp float;
-uniform vec4 uColor;
-out vec4 outColor;
-void main() { outColor = uColor; }
-`;
-
 /** Studio backdrop, volumetric paint and the glass tank. */
 export class PaintRenderer {
   private readonly background: Program;
   private readonly raymarch: Program;
   private readonly composite: Program;
-  private readonly edges: Program;
+  private readonly edges: BoxEdges;
   private scene: RenderTarget | null = null;
   private volume: RenderTarget | null = null;
   readonly floorY: number;
@@ -110,7 +78,7 @@ export class PaintRenderer {
     this.background = make(backgroundFs, 'paintBackground');
     this.raymarch = make(raymarchFs, 'raymarch');
     this.composite = make(compositeFs, 'paintComposite');
-    this.edges = new Program(gl, EDGES_VS, EDGES_FS, 'tankEdges');
+    this.edges = new BoxEdges(gl, boxHalf);
     this.floorY = -boxHalf[1] - 0.004;
   }
 
@@ -158,7 +126,7 @@ export class PaintRenderer {
     scene.bind();
     common(this.background);
     drawFullscreen(gl);
-    this.drawEdges(view, look.theme, false);
+    this.edges.draw(view, look.theme.edgeColor, false);
 
     // Paint volume at reduced resolution.
     volume.bind();
@@ -178,25 +146,7 @@ export class PaintRenderer {
       .texture('uScene', scene.texture)
       .texture('uVolume', volume.texture);
     drawFullscreen(gl);
-    this.drawEdges(view, look.theme, true);
+    this.edges.draw(view, look.theme.edgeColor, true);
     gl.depthMask(true);
-  }
-
-  private drawEdges(view: ViewState, theme: Theme, front: boolean): void {
-    const gl = this.gl;
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    const c = theme.edgeColor;
-    this.edges
-      .use()
-      .set('uModelView', view.modelView)
-      .set('uProj', view.proj)
-      .set('uBoxHalf', this.boxHalf)
-      .set('uCamPos', view.cameraPosition)
-      .set('uFront', front ? 1 : 0)
-      .set('uColor', front ? c : [c[0], c[1], c[2], c[3] * 0.6]);
-    bindEmptyVao(gl);
-    gl.drawArrays(gl.LINES, 0, 24);
-    gl.disable(gl.BLEND);
   }
 }

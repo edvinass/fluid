@@ -1,11 +1,12 @@
 # Fluid
 
-Two real-time, interactive 3D fluid visualisations that run in the browser:
+Three real-time, interactive 3D fluid visualisations that run in the browser:
 
 - **Water** (`index.html`): a tank of water made of particles that you can slosh, stir and tilt.
 - **Paint** (`paint.html`): pour coloured paint into a glass tank of water and watch it sink, curl and mix.
+- **Wind** (`wind.html`): a wind tunnel where smoke streams around a wing, a car and other shapes.
 
-Switch between them with the Water / Paint toggle in the top-left corner.
+Switch between them with the Water / Paint / Wind toggle in the top-left corner.
 
 ## Water
 
@@ -69,6 +70,8 @@ Rendering splats every particle as a sphere into a depth buffer, smooths that de
 
 On touch devices, one finger pours and two fingers orbit and zoom. When nobody is pouring, the page pours paint on its own after a few seconds (turn this off with "Auto pour when idle").
 
+The "Resolution" setting at the top of the Paint panel sets how finely the paint is simulated and drawn, from Low (48 cells across) to Max (176 cells across). The default is Ultra on desktop and Medium on phones. Auto quality only ever steps the resolution down, and choosing one yourself turns auto quality off. Levels that exceed your GPU's texture size limit are hidden.
+
 The paint page uses a different technique from the water page: an incompressible fluid solved on a 3D grid ("stable fluids"). The grid is stored as a 2D atlas of z-slices, so every step is one full-screen shader pass. Each frame it:
 
 1. Advects the velocity field through itself.
@@ -78,10 +81,30 @@ The paint page uses a different technique from the water page: an incompressible
 
 The paint is drawn by raymarching through the volume with self-shadowing. The floor shadow under the tank takes on the colour of the paint the light passes through.
 
+## Wind
+
+| Input | Action |
+| --- | --- |
+| Drag the object | Move it around the tunnel |
+| Click or hold elsewhere | Hold a smoke wand at that spot |
+| Right drag or Ctrl + drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| 1 to 5 | Sphere, cylinder, cube, wing or car |
+| [ and ] | Change the angle of attack |
+| P | Colour the object by surface pressure |
+| S | Cycle the smoke colour (white, rainbow, speed) |
+| R | Restart the flow |
+| Space | Pause or resume |
+
+The wind tunnel uses the same grid solver as the paint page, with different boundaries. Air enters at the left end at the chosen wind speed, with a little turbulence. It leaves freely at the right end and slips along the walls. Every frame, the object is sampled into the grid from a signed distance function, so it can be moved, resized and rotated while the air flows. A rake of smoke emitters at the inlet follows the object's height and depth. You can lay the streams out as a vertical sheet, a horizontal sheet or a grid, and pulse them into dashes that show how fast the air is moving.
+
+"Show surface pressure" colours the object by pressure coefficient. Blue is suction and red is where the air piles up against the object. The "Speed" smoke colour shows slow air in blue and air sped up around the object in red. Try the cylinder for a von Kármán vortex street, and tilt the wing to see the flow separate at high angles of attack.
+
 ## Project layout
 
 - `src/main.ts` sets up the water page and runs its frame loop.
 - `src/paint/` contains the paint page: the grid solver, volume renderer, pouring interaction, palette and settings.
+- `src/wind/` contains the wind tunnel page: the tunnel solver, the object shapes, the smoke and object renderer, and the drag and smoke-wand interaction.
 - `src/gl/` holds small WebGL2 helpers for programs, textures and framebuffers.
 - `src/sim/` contains the SPH solver, the bitonic sort, the scene presets and the simulation shaders.
 - `src/render/` contains the fluid renderer, the particle debug renderer and the container and environment.

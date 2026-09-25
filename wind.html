@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="An interactive 3D wind tunnel: watch smoke stream around a wing, a car and more, simulated in real time on your GPU." />
+    <title>Wind Tunnel | 3D Fluid Simulation</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M3 11h17a4 4 0 1 0-4-4M3 17h23a4 4 0 1 1-4 4M3 23h11' fill='none' stroke='%235cc8ff' stroke-width='2.5' stroke-linecap='round'/></svg>" />
+  </head>
+  <body>
+    <canvas id="app"></canvas>
+
+    <header class="title">
+      <h1>Wind Tunnel</h1>
+      <p>Smoke streams around objects, simulated in 3D on your GPU</p>
+      <nav class="switcher">
+        <a href="./">Water</a>
+        <a href="./paint.html">Paint</a>
+        <a href="./wind.html" class="active" aria-current="page">Wind</a>
+      </nav>
+    </header>
+
+    <div id="stats" class="stats">-- fps</div>
+
+    <aside id="help" class="help">
+      <button id="help-toggle" class="help-toggle" aria-expanded="true">Controls</button>
+      <ul>
+        <li><kbd>Drag</kbd> the object to move it</li>
+        <li><kbd>Click</kbd> / <kbd>Hold</kbd> elsewhere for a smoke wand</li>
+        <li><kbd>Right drag</kbd> or <kbd>Ctrl</kbd> + <kbd>Drag</kbd> orbit</li>
+        <li><kbd>Scroll</kbd> zoom</li>
+        <li><kbd>1</kbd>-<kbd>5</kbd> shape, <kbd>[</kbd> <kbd>]</kbd> angle of attack</li>
+        <li><kbd>P</kbd> surface pressure, <kbd>S</kbd> smoke colour</li>
+        <li><kbd>R</kbd> restart flow, <kbd>Space</kbd> pause</li>
+      </ul>
+    </aside>
+
+    <div id="shapes" class="palette" role="toolbar" aria-label="Object shape"></div>
+
+    <div id="error" class="error" hidden>
+      <h2>Your browser can't run this simulation</h2>
+      <p id="error-message"></p>
+      <p>Try a recent version of Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+    </div>
+
+    <script type="module" src="/src/wind/main.ts"></script>
+  </body>
+</html>
