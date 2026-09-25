@@ -128,11 +128,11 @@ vec3 shadeWax(vec3 wp, vec3 n, vec3 rd, float thickness, float temperature) {
   float wrap = max(dot(n, l) * 0.5 + 0.5, 0.0);
   // Wax right over the bulb glows yellow; elsewhere it's the saturated wax colour.
   float hot = smoothstep(0.55, 0.95, temperature) * exp(-max(wp.y - LAMP_BOTTOM, 0.0) * 5.0);
-  vec3 body = mix(uWaxColor, mix(uWaxColor, vec3(1.0, 0.85, 0.3), 0.75), hot);
+  vec3 body = mix(uWaxColor, mix(uWaxColor, vec3(1.0, 0.75, 0.2), 0.6), hot);
   float cosV = clamp(dot(n, -rd), 0.0, 1.0);
   // Light scatters inside the wax, so blobs are brighter through the middle than at the rim.
-  float scatter = 0.55 + 0.45 * cosV;
-  vec3 col = body * (0.6 * uBrightness + bulb * wrap * 0.7 + hot * 0.8 * uBrightness) * scatter;
+  float scatter = 0.45 + 0.55 * cosV;
+  vec3 col = body * (0.6 * uBrightness + bulb * wrap * 0.7 + hot * 0.35 * uBrightness) * scatter;
   col += uWaxColor * bulb * exp(-thickness * 12.0) * 0.5;
   float fresnel = 0.02 + 0.98 * pow(1.0 - cosV, 5.0);
   col += uLiquidColor * glowAt(wp.y) * fresnel * 0.3;

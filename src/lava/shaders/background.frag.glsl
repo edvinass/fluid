@@ -40,30 +40,53 @@ float noise2(vec2 p) {
   return mix(mix(hash12(i), hash12(i + vec2(1, 0)), f.x), mix(hash12(i + vec2(0, 1)), hash12(i + vec2(1, 1)), f.x), f.y);
 }
 
+float lampPartsSDF(vec3 p) {
+  return min(baseSDF(p), min(capSDF(p), coilSDF(p)));
+}
+
 void main() {
   vec3 rd = cameraRay(vUv);
   vec3 ro = uCameraWorld[3].xyz;
-  float t = 0.0;
-  bool hit = false;
-  for (int i = 0; i < 128; i++) {
-    float d = sceneSDF(ro + rd * t);
-    if (d < 0.0004 * t) {
-      hit = true;
-      break;
+  // The table is a plane, so hit it exactly: marching towards it at grazing angles next to the
+  // base runs out of steps and leaves rings of missed pixels around the lamp.
+  float tTable = rd.y < -1e-5 ? (TABLE_Y - ro.y) / rd.y : 1e9;
+  if (tTable < 0.0) tTable = 1e9;
+  float t = 1e9;
+  // Only march the lamp's parts, inside the cylinder that bounds them.
+  vec2 oc = ro.xz;
+  float a = dot(rd.xz, rd.xz);
+  float b = dot(oc, rd.xz);
+  float c = dot(oc, oc) - (BASE_R + 0.02) * (BASE_R + 0.02);
+  float disc = b * b - a * c;
+  if (disc > 0.0 && a > 1e-8) {
+    float s = sqrt(disc);
+    float t0 = max((-b - s) / a, 0.0);
+    float t1 = min((-b + s) / a, tTable);
+    float tm = t0;
+    for (int i = 0; i < 96; i++) {
+      if (tm > t1) break;
+      float d = lampPartsSDF(ro + rd * tm);
+      if (d < 0.0004 * tm) {
+        t = tm;
+        break;
+      }
+      tm += d;
     }
-    t += d;
-    if (t > 15.0) break;
   }
+  bool hit = true;
+  if (t > tTable) t = tTable;
+  if (t > 15.0) hit = false;
   if (!hit) {
     outColor = vec4(environment(rd), 0.0);
     return;
   }
 
   vec3 p = ro + rd * t;
-  vec3 n = sceneNormal(p);
+  bool onTable = t == tTable;
+  vec3 n = onTable ? vec3(0.0, 1.0, 0.0) : sceneNormal(p);
   vec3 refl = reflect(rd, n);
   vec3 col;
-  if (p.y < TABLE_Y + 0.001) {
+  if (onTable) {
     // A dark wooden table, lit by the lamp.
     vec2 q = p.xz * vec2(1.0, 7.0);
     float grain = noise2(q * 3.0 + noise2(q * 0.6) * 2.0);

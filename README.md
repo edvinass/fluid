@@ -1,6 +1,6 @@
 # Fluid
 
-Eight real-time, interactive 3D visualisations that run in the browser:
+Nine real-time, interactive 3D visualisations that run in the browser:
 
 - **Water** (`index.html`): a tank of water made of particles that you can slosh, stir and tilt.
 - **Paint** (`paint.html`): pour coloured paint into a glass tank of water and watch it sink, curl and mix.
@@ -10,6 +10,7 @@ Eight real-time, interactive 3D visualisations that run in the browser:
 - **Honey** (`honey.html`): drizzle honey onto a plate, lift a honey dipper out of a bowl, or drop blobs of syrup, caramel and chocolate.
 - **Sand & Snow** (`sand.html`): knock down a sandcastle, pelt a snowman with snowballs, or pour sand, wet sand, snow and jelly into a sandbox.
 - **Plasma** (`plasma.html`): a plasma ball whose glowing filaments crawl over the glass and gather under your fingertip.
+- **Lava Lamp** (`lava.html`): blobs of wax that melt on the bulb, pinch off, drift up, cool under the cap and sink back.
 
 Switch between them with the toggle in the top-left corner.
 
@@ -207,6 +208,21 @@ Each filament's end wanders over the inside of the glass. The ends push each oth
 
 Every frame, each filament is rebuilt from the electrode to the glass as a smooth curve with two octaves of slow noise that travel outward along it, plus, on some filaments, small forks that peel smoothly off it just before the glass. Their points go into a small float texture, and a vertex shader turns every segment into a camera-facing ribbon. The ribbon is shaded as a soft, translucent thread, paler along its middle and bluer at its edges, that takes on the gas's glow colour (pink-red for the neon and argon mix) near the electrode and the glass. The room, table, base, glass stem and electrode are ray traced in one full-screen pass, which also adds the gas glowing around the electrode (a Gaussian integrated along each ray) and the hot spots where filaments meet the glass. The globe lights the table and base, and the base casts a ring of shadow on the table. Bloom at four scales and reflections in the glass are added last. With "React to sound" on, loud sound raises the voltage, so the filaments brighten, twist and twitch in time with music.
 
+## Lava Lamp
+
+| Input | Action |
+| --- | --- |
+| Drag | Push the wax around |
+| Right drag or Ctrl + drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| 1 to 5 | Pick the colours |
+| C | Cool down and restart |
+| Space | Pause or resume |
+
+The lamp starts cold, with all the wax in a pool on the bulb. As the bulb melts the pool, it swells into a bulge that grows, narrows into a neck and pinches off. The blob drifts up through the liquid, losing heat as it goes (small blobs faster, since they have more surface for their size), squashes against the cap until it has cooled, then sinks and melts back into the pool. Wax turns buoyant as it melts, so a blob rises while it's warm and sinks once it's cold. Bigger blobs move faster through the liquid, the way large drops do. Blobs at a similar temperature flow together when they touch, while a hot rising blob and a cold sinking one push past each other. Now and then a big blob tears in two. The pool cools a little each time a blob leaves, so blobs come off one at a time rather than in a stream.
+
+The wax is drawn as one smooth surface: the pool, every blob (stretched into a teardrop while it moves and flattened against the cap) and the necks joining new blobs to the pool are combined with a smooth minimum, so blobs merge and pinch off without seams. Each pixel ray marches only the blobs its ray passes near. The wax glows yellow where it's hot over the bulb, lets light through where it's thin, and is brighter through the middle than at the rim. The liquid tints what's behind it and glows more strongly towards the bulb. The room, table, metal base and cap are ray marched first and lit by the lamp.
+
 ## Project layout
 
 - `src/main.ts` sets up the water page and runs its frame loop.
@@ -216,6 +232,7 @@ Every frame, each filament is rebuilt from the electrode to the glass as a smoot
 - `src/honey/` contains the honey page: the MPM solver, the scenes and liquids, the table-top renderer and the dipper interaction.
 - `src/sand/` contains the sand and snow page: the elastoplastic MPM solver and its materials, the sandcastle and snowman builders, the shadowed grain renderer, and the throwing, pouring and plowing interaction.
 - `src/plasma/` contains the plasma ball page: the filament simulation, the gases, the globe and ribbon renderer with bloom, the touch interaction and the microphone input.
+- `src/lava/` contains the lava lamp page: the wax blob simulation, the lamp and wax renderer, the colour schemes and the push interaction.
 - `src/wind/` contains the wind tunnel page: the tunnel solver, the object shapes, the smoke and object renderer, and the drag and smoke-wand interaction.
 - `src/gl/` holds small WebGL2 helpers for programs, textures and framebuffers.
 - `src/sim/` contains the SPH solver, the bitonic sort, the scene presets and the simulation shaders.
