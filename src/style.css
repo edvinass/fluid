@@ -136,6 +136,17 @@ body.theme-honey .title h1 {
   background-clip: text;
 }
 
+body.theme-lava {
+  --accent: #ff8a3d;
+  background: #07060a;
+}
+
+body.theme-lava .title h1 {
+  background: linear-gradient(90deg, #ffc04a, #ff4a12, #b25aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 body.theme-sand {
   --accent: #e2b877;
   background: #0f0b08;
@@ -143,6 +154,17 @@ body.theme-sand {
 
 body.theme-sand .title h1 {
   background: linear-gradient(90deg, #f3d9a6, #d9b27a, #eef4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+body.theme-plasma {
+  --accent: #c58cff;
+  background: #030205;
+}
+
+body.theme-plasma .title h1 {
+  background: linear-gradient(90deg, #f0d4ff, #c58cff, #6b52ff);
   -webkit-background-clip: text;
   background-clip: text;
 }

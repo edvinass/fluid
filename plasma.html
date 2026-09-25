@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="A real-time plasma ball: glowing filaments crawl from the electrode to the glass and gather under your fingertip, simulated on your GPU." />
+    <title>Plasma | 3D Simulation</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='14' r='12' fill='none' stroke='%23c58cff' stroke-width='2'/><path d='M16 14l-7-6M16 14l8-5M16 14l-3 9M16 14l9 4' stroke='%23f0d4ff' stroke-width='1.5' fill='none'/><circle cx='16' cy='14' r='2.5' fill='%23fff'/></svg>" />
+  </head>
+  <body class="theme-plasma">
+    <canvas id="app"></canvas>
+
+    <header class="title">
+      <h1>Plasma</h1>
+      <p>A plasma ball that follows your fingertip</p>
+      <nav class="switcher">
+        <a href="./">Water</a>
+        <a href="./paint.html">Paint</a>
+        <a href="./wind.html">Wind</a>
+        <a href="./fire.html">Fire</a>
+        <a href="./bubble.html">Bubble</a>
+        <a href="./honey.html">Honey</a>
+        <a href="./sand.html">Sand</a>
+        <a href="./plasma.html" class="active" aria-current="page">Plasma</a>
+      </nav>
+    </header>
+
+    <div id="stats" class="stats">-- fps</div>
+
+    <aside id="help" class="help">
+      <button id="help-toggle" class="help-toggle" aria-expanded="true">Controls</button>
+      <ul>
+        <li><kbd>Press</kbd> the glass to touch it, with several fingers on a touch screen</li>
+        <li><kbd>Drag</kbd> beside it or <kbd>Right drag</kbd> orbit</li>
+        <li><kbd>Scroll</kbd> zoom</li>
+        <li><kbd>1</kbd>-<kbd>7</kbd> gas, <kbd>M</kbd> react to sound</li>
+        <li><kbd>R</kbd> restart, <kbd>Space</kbd> pause</li>
+      </ul>
+    </aside>
+
+    <div id="toolbar" class="palette" role="toolbar" aria-label="Gas"></div>
+
+    <div id="error" class="error" hidden>
+      <h2>Your browser can't run this simulation</h2>
+      <p id="error-message"></p>
+      <p>Try a recent version of Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+    </div>
+
+    <script type="module" src="/src/plasma/main.ts"></script>
+  </body>
+</html>

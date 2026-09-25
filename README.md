@@ -1,6 +1,6 @@
 # Fluid
 
-Seven real-time, interactive 3D fluid visualisations that run in the browser:
+Eight real-time, interactive 3D visualisations that run in the browser:
 
 - **Water** (`index.html`): a tank of water made of particles that you can slosh, stir and tilt.
 - **Paint** (`paint.html`): pour coloured paint into a glass tank of water and watch it sink, curl and mix.
@@ -9,6 +9,7 @@ Seven real-time, interactive 3D fluid visualisations that run in the browser:
 - **Bubble** (`bubble.html`): a soap bubble whose film swirls and shimmers with interference colours until it pops.
 - **Honey** (`honey.html`): drizzle honey onto a plate, lift a honey dipper out of a bowl, or drop blobs of syrup, caramel and chocolate.
 - **Sand & Snow** (`sand.html`): knock down a sandcastle, pelt a snowman with snowballs, or pour sand, wet sand, snow and jelly into a sandbox.
+- **Plasma** (`plasma.html`): a plasma ball whose glowing filaments crawl over the glass and gather under your fingertip.
 
 Switch between them with the toggle in the top-left corner.
 
@@ -188,6 +189,24 @@ The solver is the honey page's MPM with one change: each particle also tracks ho
 
 The grid applies Coulomb friction where grains press against the sandbox or the ball. Substeps are added automatically as the stiffness or the resolution goes up. The table, sandbox and ball are ray marched. The particles are drawn as spheres whose depth is smoothed into a surface. For sand, the spheres are twice as big and overlap heavily, and are pushed back to keep the piles the right size, so they merge into smooth slopes rather than a heap of balls. Real sand grains are far smaller than the simulated particles, so the shading covers sand in tiny procedural grains: cells of a 3D Voronoi pattern anchored to the nearest particle, so they move with the sand. Each grain is a rounded pebble with its own mineral colour (mostly tan, with some pale, rusty and dark grains), darkened where it meets its neighbours. "Grain size" in the rendering settings changes how fine they are, and grains smaller than a pixel fade to their average colour. Snow gets softer, finer bumps. A shadow map rendered from the light lets piles shadow each other, and crevices are darkened. Snow is lit softly, goes blue in the shade and glints. The "Resolution" setting sets the grid (40 to 80 cells across) and how many grains fit, from 49k to 328k.
 
+## Plasma
+
+| Input | Action |
+| --- | --- |
+| Press the glass | Touch the globe (several fingers work on a touch screen) |
+| Drag beside the globe, right drag or Ctrl + drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| 1 to 7 | Pick the gas |
+| M | React to sound from the microphone |
+| R | Restart |
+| Space | Pause or resume |
+
+The swatches in the bottom bar fill the globe with a different gas: the usual neon and argon mix, or neon, argon, xenon, helium or krypton on their own, each glowing its own colour. Rainbow gives every filament its own hue.
+
+Each filament's end wanders over the inside of the glass. The ends push each other apart like charges, the hot gas lifts them, and a slowly changing noise keeps them drifting. When you touch the globe, the nearest filament snaps to your fingertip and brightens, its forks close up into one thick bolt, nearby filaments lean towards it, and the rest dim as the current is drawn away. Filaments go out every few seconds and strike again somewhere else. The electrode end follows the glass end with a lag, so filaments bend as they move.
+
+Every frame, each filament is rebuilt from the electrode to the glass as a curve with four octaves of noise that travel outward along it, plus three thinner forks near the glass. Their points go into a small float texture, and a vertex shader turns every segment into a camera-facing ribbon with a bright core and a soft halo. The room, table, base, glass stem and electrode are ray traced in one full-screen pass, which also adds the gas glowing around the electrode (a Gaussian integrated along each ray) and the hot spots where filaments meet the glass. The globe lights the table and base, and the base casts a ring of shadow on the table. Bloom at four scales and reflections in the glass are added last. With "React to sound" on, loud sound raises the voltage, so the filaments brighten, twist and twitch in time with music.
+
 ## Project layout
 
 - `src/main.ts` sets up the water page and runs its frame loop.
@@ -196,6 +215,7 @@ The grid applies Coulomb friction where grains press against the sandbox or the 
 - `src/bubble/` contains the bubble page: the film solver on cube maps, the thin-film ray tracer, the stirring and popping interaction and the lifecycle of each bubble.
 - `src/honey/` contains the honey page: the MPM solver, the scenes and liquids, the table-top renderer and the dipper interaction.
 - `src/sand/` contains the sand and snow page: the elastoplastic MPM solver and its materials, the sandcastle and snowman builders, the shadowed grain renderer, and the throwing, pouring and plowing interaction.
+- `src/plasma/` contains the plasma ball page: the filament simulation, the gases, the globe and ribbon renderer with bloom, the touch interaction and the microphone input.
 - `src/wind/` contains the wind tunnel page: the tunnel solver, the object shapes, the smoke and object renderer, and the drag and smoke-wand interaction.
 - `src/gl/` holds small WebGL2 helpers for programs, textures and framebuffers.
 - `src/sim/` contains the SPH solver, the bitonic sort, the scene presets and the simulation shaders.

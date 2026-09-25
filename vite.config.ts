@@ -14,6 +14,8 @@ export default defineConfig({
         bubble: resolve(__dirname, 'bubble.html'),
         honey: resolve(__dirname, 'honey.html'),
         sand: resolve(__dirname, 'sand.html'),
+        plasma: resolve(__dirname, 'plasma.html'),
+        lava: resolve(__dirname, 'lava.html'),
       },
     },
   },
