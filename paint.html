@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Pour paint into a tank of water: a real-time 3D fluid simulation with volumetric rendering." />
+    <title>Paint | 3D Fluid Simulation</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 3C11 10 7 15 7 20a9 9 0 0 0 18 0c0-5-4-10-9-17z' fill='%23e63946'/></svg>" />
+  </head>
+  <body class="theme-light">
+    <canvas id="app"></canvas>
+
+    <header class="title">
+      <h1>Paint</h1>
+      <p>Pour paint into water, simulated in 3D on your GPU</p>
+      <nav class="switcher">
+        <a href="./">Water</a>
+        <a href="./paint.html" class="active" aria-current="page">Paint</a>
+      </nav>
+    </header>
+
+    <div id="stats" class="stats">-- fps</div>
+
+    <aside id="help" class="help">
+      <button id="help-toggle" class="help-toggle" aria-expanded="true">Controls</button>
+      <ul>
+        <li><kbd>Click</kbd> / <kbd>Hold</kbd> pour paint</li>
+        <li><kbd>Shift</kbd> + <kbd>Drag</kbd> stir the water</li>
+        <li><kbd>Right drag</kbd> or <kbd>Ctrl</kbd> + <kbd>Drag</kbd> orbit</li>
+        <li><kbd>Scroll</kbd> zoom</li>
+        <li><kbd>1</kbd>-<kbd>9</kbd> colour, <kbd>0</kbd> rainbow</li>
+        <li><kbd>C</kbd> clear, <kbd>Space</kbd> pause</li>
+      </ul>
+    </aside>
+
+    <div id="palette" class="palette" role="toolbar" aria-label="Paint colour"></div>
+
+    <div id="error" class="error" hidden>
+      <h2>Your browser can't run this simulation</h2>
+      <p id="error-message"></p>
+      <p>Try a recent version of Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+    </div>
+
+    <script type="module" src="/src/paint/main.ts"></script>
+  </body>
+</html>

@@ -21,6 +21,10 @@ export function r16f(gl: WebGL2RenderingContext): TextureFormat {
   return { internalFormat: gl.R16F, format: gl.RED, type: gl.HALF_FLOAT, filter: gl.LINEAR };
 }
 
+export function rgba16f(gl: WebGL2RenderingContext): TextureFormat {
+  return { internalFormat: gl.RGBA16F, format: gl.RGBA, type: gl.HALF_FLOAT, filter: gl.LINEAR };
+}
+
 export function rgba8(gl: WebGL2RenderingContext): TextureFormat {
   return { internalFormat: gl.RGBA8, format: gl.RGBA, type: gl.UNSIGNED_BYTE, filter: gl.LINEAR };
 }

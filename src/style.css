@@ -56,6 +56,150 @@ body {
   color: var(--muted);
 }
 
+.switcher {
+  display: inline-flex;
+  gap: 2px;
+  margin-top: 10px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+.switcher a {
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.switcher a:hover {
+  color: var(--text);
+}
+
+.switcher a.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+/* Paint page: light studio theme overrides and the colour palette. */
+body.theme-light {
+  --panel-bg: rgba(255, 255, 255, 0.7);
+  --panel-border: rgba(0, 0, 0, 0.08);
+  --text: #1c2430;
+  --muted: #5d6b7c;
+  --accent: #d6336c;
+  background: #e9ebef;
+}
+
+body.theme-light .title h1 {
+  background: linear-gradient(90deg, #e63946, #f4a261, #2a9d8f, #7b2cbf);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+body.theme-light .switcher a.active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light kbd {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.theme-light .stats,
+body.theme-light .help,
+body.theme-light .palette {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+body.theme-light .lil-gui {
+  --background-color: rgba(255, 255, 255, 0.85);
+  --title-background-color: rgba(240, 242, 246, 0.95);
+  --text-color: #1c2430;
+  --title-text-color: #1c2430;
+  --widget-color: rgba(0, 0, 0, 0.07);
+  --hover-color: rgba(0, 0, 0, 0.12);
+  --focus-color: rgba(0, 0, 0, 0.16);
+  --number-color: #d6336c;
+  --string-color: #2a9d8f;
+}
+
+.palette {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(10px);
+}
+
+.swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s;
+}
+
+.swatch:hover {
+  transform: scale(1.12);
+}
+
+.swatch.selected {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 2px var(--text);
+}
+
+.swatch.rainbow {
+  background: conic-gradient(#e63946, #f6d743, #2a9d8f, #1d4ed8, #7b2cbf, #e63946);
+}
+
+.palette .divider {
+  width: 1px;
+  height: 22px;
+  background: var(--panel-border);
+}
+
+.palette button.text {
+  all: unset;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 2px 6px;
+}
+
+.palette button.text:hover {
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .palette {
+    bottom: 12px;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+  .swatch {
+    width: 22px;
+    height: 22px;
+  }
+}
+
 .stats {
   position: fixed;
   bottom: 16px;
@@ -137,7 +281,7 @@ kbd {
   color: var(--muted);
 }
 
-.lil-gui.root {
+.lil-gui {
   --background-color: rgba(12, 18, 28, 0.85);
   --title-background-color: rgba(20, 30, 44, 0.95);
   --widget-color: rgba(255, 255, 255, 0.08);

@@ -1,6 +1,15 @@
 # Fluid
 
-A real-time, interactive 3D water simulation that runs in the browser. It uses Smoothed Particle Hydrodynamics (SPH), with the whole solver running on the GPU through WebGL2 fragment shaders, and draws the particles as a smooth liquid surface with screen-space fluid rendering.
+Two real-time, interactive 3D fluid visualisations that run in the browser:
+
+- **Water** (`index.html`): a tank of water made of particles that you can slosh, stir and tilt.
+- **Paint** (`paint.html`): pour coloured paint into a glass tank of water and watch it sink, curl and mix.
+
+Switch between them with the Water / Paint toggle in the top-left corner.
+
+## Water
+
+The water page is a real-time, interactive 3D water simulation. It uses Smoothed Particle Hydrodynamics (SPH), with the whole solver running on the GPU through WebGL2 fragment shaders, and draws the particles as a smooth liquid surface with screen-space fluid rendering.
 
 ## Running it
 
@@ -46,9 +55,33 @@ The container simulates in its own local frame. When you tilt it, gravity is rot
 
 Rendering splats every particle as a sphere into a depth buffer, smooths that depth with a bilateral blur, rebuilds surface normals, and shades the result with Fresnel reflection, refraction and Beer-Lambert absorption based on an accumulated thickness buffer.
 
+## Paint
+
+| Input | Action |
+| --- | --- |
+| Click or hold | Pour paint above the point under the cursor |
+| Shift + drag | Stir the water |
+| Right drag or Ctrl + drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| 1 to 9, 0 | Pick a colour, or rainbow |
+| C | Clear the tank |
+| Space | Pause or resume |
+
+On touch devices, one finger pours and two fingers orbit and zoom. When nobody is pouring, the page pours paint on its own after a few seconds (turn this off with "Auto pour when idle").
+
+The paint page uses a different technique from the water page: an incompressible fluid solved on a 3D grid ("stable fluids"). The grid is stored as a 2D atlas of z-slices, so every step is one full-screen shader pass. Each frame it:
+
+1. Advects the velocity field through itself.
+2. Adds vorticity confinement (to keep small swirls alive), the downward pull of the heavier paint, and the velocity of any pour or stir.
+3. Solves for pressure with Jacobi iterations and removes the divergent part of the velocity.
+4. Advects the paint with MacCormack advection, which keeps filaments sharp, and injects new paint.
+
+The paint is drawn by raymarching through the volume with self-shadowing. The floor shadow under the tank takes on the colour of the paint the light passes through.
+
 ## Project layout
 
-- `src/main.ts` sets everything up and runs the frame loop.
+- `src/main.ts` sets up the water page and runs its frame loop.
+- `src/paint/` contains the paint page: the grid solver, volume renderer, pouring interaction, palette and settings.
 - `src/gl/` holds small WebGL2 helpers for programs, textures and framebuffers.
 - `src/sim/` contains the SPH solver, the bitonic sort, the scene presets and the simulation shaders.
 - `src/render/` contains the fluid renderer, the particle debug renderer and the container and environment.
