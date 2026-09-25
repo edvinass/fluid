@@ -36,6 +36,6 @@ export function createLavaUI(settings: LavaSettings, actions: LavaUIActions): GU
 
   physics.close();
   view.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

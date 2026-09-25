@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <style>
+      html, body { background: #030205; color-scheme: dark; }
+      body > * { transition: opacity 0.28s ease; }
+      body:not(.ready) > * { opacity: 0; }
+      @view-transition { navigation: auto; }
+      ::view-transition-old(root),
+      ::view-transition-new(root) { animation-duration: 0.22s; }
+    </style>
+    <script type="speculationrules">
+      { "prefetch": [{ "where": { "selector_matches": ".switcher a" }, "eagerness": "moderate" }] }
+    </script>
     <meta name="description" content="A real-time plasma ball: glowing filaments crawl from the electrode to the glass and gather under your fingertip, simulated on your GPU." />
     <title>Plasma | 3D Simulation</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='14' r='12' fill='none' stroke='%23c58cff' stroke-width='2'/><path d='M16 14l-7-6M16 14l8-5M16 14l-3 9M16 14l9 4' stroke='%23f0d4ff' stroke-width='1.5' fill='none'/><circle cx='16' cy='14' r='2.5' fill='%23fff'/></svg>" />

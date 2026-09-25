@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <style>
+      html, body { background: #0b111a; color-scheme: dark; }
+      body > * { transition: opacity 0.28s ease; }
+      body:not(.ready) > * { opacity: 0; }
+      @view-transition { navigation: auto; }
+      ::view-transition-old(root),
+      ::view-transition-new(root) { animation-duration: 0.22s; }
+    </style>
+    <script type="speculationrules">
+      { "prefetch": [{ "where": { "selector_matches": ".switcher a" }, "eagerness": "moderate" }] }
+    </script>
     <meta name="description" content="Real-time 3D SPH fluid simulation running entirely on the GPU with WebGL2." />
     <title>Fluid | 3D SPH Simulation</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 3C11 10 7 15 7 20a9 9 0 0 0 18 0c0-5-4-10-9-17z' fill='%235cc8ff'/></svg>" />

@@ -34,6 +34,6 @@ export function createPlasmaUI(settings: PlasmaSettings, actions: PlasmaUIAction
   view.add(settings.look, 'roomLight', 0, 3, 0.05).name('Light on the table');
 
   view.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

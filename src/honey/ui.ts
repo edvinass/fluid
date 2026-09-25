@@ -57,6 +57,6 @@ export function createHoneyUI(settings: HoneySettings, qualityLevels: string[], 
 
   physics.close();
   view.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

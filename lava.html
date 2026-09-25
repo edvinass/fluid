@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <style>
+      html, body { background: #07060a; color-scheme: dark; }
+      body > * { transition: opacity 0.28s ease; }
+      body:not(.ready) > * { opacity: 0; }
+      @view-transition { navigation: auto; }
+      ::view-transition-old(root),
+      ::view-transition-new(root) { animation-duration: 0.22s; }
+    </style>
+    <script type="speculationrules">
+      { "prefetch": [{ "where": { "selector_matches": ".switcher a" }, "eagerness": "moderate" }] }
+    </script>
     <meta name="description" content="A real-time 3D lava lamp: glowing wax heats, rises, cools and sinks in blobs that merge and split, simulated on your GPU." />
     <title>Lava Lamp | 3D Fluid Simulation</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M12 4h8l4 18H8z' fill='%23ffc04a'/><circle cx='16' cy='16' r='3.5' fill='%23ff4a12'/><path d='M8 22h16l3 7H5z' fill='%23999'/></svg>" />

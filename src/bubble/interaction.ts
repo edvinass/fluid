@@ -37,7 +37,7 @@ export class BubbleInteraction {
     this.controls.dampingFactor = 0.08;
     this.controls.enablePan = false;
     this.controls.minDistance = 1.8;
-    this.controls.maxDistance = 8;
+    this.controls.maxDistance = 10;
     this.controls.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE };
     this.controls.touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_ROTATE };
 

@@ -357,11 +357,12 @@ kbd {
   backdrop-filter: blur(8px);
 }
 
-/* Leave room for the settings panel so the page switcher wraps instead of running under it. */
+/* Collapsed settings is just the title, so it stays a small corner chip. */
+.lil-gui.lil-root.lil-auto-place.lil-closed {
+  width: auto;
+}
+
 @media (max-width: 900px) {
-  .title {
-    right: 275px;
-  }
   .switcher {
     flex-wrap: wrap;
     border-radius: 18px;
@@ -373,7 +374,8 @@ kbd {
   .title {
     top: calc(10px + env(safe-area-inset-top));
     left: calc(12px + env(safe-area-inset-left));
-    right: calc(12px + env(safe-area-inset-right));
+    /* Keep the page switcher clear of the collapsed Settings chip. */
+    right: calc(128px + env(safe-area-inset-right));
   }
   .title h1 {
     font-size: 20px;

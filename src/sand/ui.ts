@@ -55,6 +55,6 @@ export function createSandUI(settings: SandSettings, qualityLevels: string[], ac
 
   physics.close();
   view.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

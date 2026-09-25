@@ -23,7 +23,7 @@ export class PlasmaInteraction {
     this.controls.dampingFactor = 0.08;
     this.controls.enablePan = false;
     this.controls.minDistance = 2.2;
-    this.controls.maxDistance = 7;
+    this.controls.maxDistance = 10;
     this.controls.maxPolarAngle = 1.72;
     this.controls.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE };
     this.controls.touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_ROTATE };

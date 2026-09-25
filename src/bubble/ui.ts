@@ -60,6 +60,6 @@ export function createBubbleUI(settings: BubbleSettings, qualityLevels: string[]
 
   physics.close();
   view.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

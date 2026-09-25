@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <style>
+      html, body { background: #120c07; color-scheme: dark; }
+      body > * { transition: opacity 0.28s ease; }
+      body:not(.ready) > * { opacity: 0; }
+      @view-transition { navigation: auto; }
+      ::view-transition-old(root),
+      ::view-transition-new(root) { animation-duration: 0.22s; }
+    </style>
+    <script type="speculationrules">
+      { "prefetch": [{ "where": { "selector_matches": ".switcher a" }, "eagerness": "moderate" }] }
+    </script>
     <meta name="description" content="Real-time 3D honey: drizzle it, dip into it and drop blobs of it, with syrup, caramel and chocolate too, simulated on your GPU." />
     <title>Honey | 3D Fluid Simulation</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 3c3 7 9 11 9 17a9 9 0 0 1-18 0c0-6 6-10 9-17z' fill='%23e8a317'/></svg>" />

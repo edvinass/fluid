@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <style>
+      html, body { background: #0f0b08; color-scheme: dark; }
+      body > * { transition: opacity 0.28s ease; }
+      body:not(.ready) > * { opacity: 0; }
+      @view-transition { navigation: auto; }
+      ::view-transition-old(root),
+      ::view-transition-new(root) { animation-duration: 0.22s; }
+    </style>
+    <script type="speculationrules">
+      { "prefetch": [{ "where": { "selector_matches": ".switcher a" }, "eagerness": "moderate" }] }
+    </script>
     <meta name="description" content="Real-time 3D sand and snow: knock down a sandcastle, pelt a snowman with snowballs and pour sand, snow and jelly, simulated on your GPU." />
     <title>Sand &amp; Snow | 3D Fluid Simulation</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M3 27 L16 8 L29 27 Z' fill='%23d9b27a'/></svg>" />

@@ -74,6 +74,6 @@ export function createWindUI(settings: WindSettings, qualityLevels: string[], ac
 
   smoke.close();
   view.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

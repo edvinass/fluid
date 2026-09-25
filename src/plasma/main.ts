@@ -1,3 +1,4 @@
+import '../boot';
 import '../style.css';
 import { PerspectiveCamera, Quaternion } from 'three';
 import { createContext, UnsupportedError } from '../gl/context';
@@ -36,10 +37,16 @@ function start(): void {
   };
 
   const camera = new PerspectiveCamera(40, 1, 0.05, 100);
-  camera.position.set(0, 0.45, 3.4);
   const sim = new PlasmaSimulator();
   const interaction = new PlasmaInteraction(camera, canvas);
   interaction.controls.target.set(0, -0.2, 0);
+  interaction.controls.maxDistance = 10;
+  // Pull back on a tall screen so the globe and its base clear the page chrome.
+  const aspect = Math.max(canvas.clientWidth / Math.max(canvas.clientHeight, 1), 0.3);
+  const halfTan = Math.tan((camera.fov * Math.PI) / 360);
+  const distance = Math.max(4.4, 1.15 / (halfTan * aspect));
+  const pitch = 0.19;
+  camera.position.set(0, -0.2 + Math.sin(pitch) * distance, Math.cos(pitch) * distance);
   interaction.controls.update();
 
   let gasIndex = 0;

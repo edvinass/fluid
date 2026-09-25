@@ -85,6 +85,6 @@ export function createUI(settings: AppSettings, actions: UIActions): GUI {
 
   interact.close();
   render.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

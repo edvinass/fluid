@@ -1,3 +1,4 @@
+import '../boot';
 import '../style.css';
 import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { createContext, UnsupportedError } from '../gl/context';

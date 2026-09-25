@@ -61,6 +61,6 @@ export function createPaintUI(settings: PaintSettings, qualityLevels: string[], 
 
   water.close();
   view.close();
-  if (window.innerWidth < 700) gui.close();
+  gui.close();
   return gui;
 }

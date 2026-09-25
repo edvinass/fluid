@@ -1,3 +1,4 @@
+import '../boot';
 import '../style.css';
 import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { createContext, UnsupportedError } from '../gl/context';
@@ -63,7 +64,6 @@ function start(): void {
   };
 
   const camera = new PerspectiveCamera(40, 1, 0.05, 100);
-  camera.position.set(0, 0.3, 3.2);
 
   const sim = new BubbleSimulator(gl);
   const renderer = new BubbleRenderer(gl);
@@ -99,6 +99,13 @@ function start(): void {
 
   const interaction = new BubbleInteraction(camera, canvas, () => ({ center, radius }), pop);
   interaction.controls.target.set(0, 0, 0);
+  interaction.controls.maxDistance = 10;
+  // Pull back on a tall screen so the bubble clears the page chrome.
+  const aspect = Math.max(canvas.clientWidth / Math.max(canvas.clientHeight, 1), 0.3);
+  const halfTan = Math.tan((camera.fov * Math.PI) / 360);
+  const distance = Math.max(3.6, 1.15 / (halfTan * aspect));
+  const pitch = 0.09;
+  camera.position.set(0, Math.sin(pitch) * distance, Math.cos(pitch) * distance);
   interaction.controls.update();
 
   const maxCube = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE) as number;
