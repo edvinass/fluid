@@ -1,12 +1,14 @@
 # Fluid
 
-Three real-time, interactive 3D fluid visualisations that run in the browser:
+Five real-time, interactive 3D fluid visualisations that run in the browser:
 
 - **Water** (`index.html`): a tank of water made of particles that you can slosh, stir and tilt.
 - **Paint** (`paint.html`): pour coloured paint into a glass tank of water and watch it sink, curl and mix.
 - **Wind** (`wind.html`): a wind tunnel where smoke streams around a wing, a car and other shapes.
+- **Fire** (`fire.html`): a campfire, a gas burner, fireballs and a torch you can wield, at night.
+- **Bubble** (`bubble.html`): a soap bubble whose film swirls and shimmers with interference colours until it pops.
 
-Switch between them with the Water / Paint / Wind toggle in the top-left corner.
+Switch between them with the toggle in the top-left corner.
 
 ## Water
 
@@ -100,10 +102,52 @@ The wind tunnel uses the same grid solver as the paint page, with different boun
 
 "Show surface pressure" colours the object by pressure coefficient. Blue is suction and red is where the air piles up against the object. The "Speed" smoke colour shows slow air in blue and air sped up around the object in red. Try the cylinder for a von Kármán vortex street, and tilt the wing to see the flow separate at high angles of attack.
 
+## Fire
+
+| Input | Action |
+| --- | --- |
+| Click or hold | Wield a torch at the cursor |
+| Shift + drag | Blow on the flames |
+| Right drag or Ctrl + drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| 1 to 4 | Campfire, gas burner, fireballs or torch |
+| C | Put the fire out |
+| Space | Pause or resume |
+
+The bottom bar also picks a flame colour. Besides natural fire, you can choose the colours of a flame test: blue gas, copper green, potassium violet, strontium red and sodium yellow.
+
+The fire runs on the same grid solver as the paint page. The grid carries temperature, smoke and fuel alongside the velocity. Fuel burns once it's hot enough, releasing heat and soot. Heat makes the gas rise, and it cools as it climbs, so flames turn into smoke. The ground is solid, and the sides and top are open, so the fire draws in fresh air. The campfire logs and stones and the gas burner are signed distance functions sampled into the grid, so the flames flow around them.
+
+Each frame, the fire's total glow and its centre are summed on the GPU into a single texel. That turns the fire into a flickering point light for the ground, the stones, the logs and the smoke. The flames are raymarched as glowing, light-absorbing gas, then bloom and filmic tone mapping are applied.
+
+## Bubble
+
+| Input | Action |
+| --- | --- |
+| Drag across the bubble | Stir the film |
+| Drag beside it or right drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| Double-click or P | Pop the bubble where you clicked |
+| R | Blow a new bubble |
+| Space | Pause or resume |
+
+The bottom bar switches between a dark photo studio and a sunny meadow. Bubbles pop by themselves after a while (turn this off with "Pop by itself"), and a new one inflates straight away.
+
+The soap film is simulated as a thin, incompressible 2D fluid flowing over the surface of the sphere. Its velocity and thickness are stored in cube maps, so every step is a shader pass per cube face, with neighbour lookups crossing seamlessly between faces. Each frame it:
+
+1. Advects the velocity along the sphere.
+2. Adds buoyancy (thick film is heavier and slides down, thin film rises), vorticity confinement, a gentle breeze and the stir from your pointer.
+3. Solves for pressure with Jacobi iterations, weighting each neighbour by its true distance on the sphere.
+4. Advects the thickness with MacCormack advection, drains liquid from the top towards the bottom, and now and then thins a patch near the bottom, which rises as a colourful plume.
+
+The bubble is ray traced in one pass. At its front and back surfaces, the colour comes from thin-film interference: light reflected off the film's inner and outer faces cancels or reinforces depending on thickness, angle and wavelength. The shader sums that over 16 wavelengths, converts to colour with the CIE colour matching functions and reflects the environment with it. As the top of the bubble drains, its film fades from rich colours to pale silver and gold. Left long enough (turn off "Pop by itself"), it thins into black film, which barely reflects at all. The "Resolution" setting sets the size of each cube face, from Low (128 texels) to Max (768).
+
 ## Project layout
 
 - `src/main.ts` sets up the water page and runs its frame loop.
 - `src/paint/` contains the paint page: the grid solver, volume renderer, pouring interaction, palette and settings.
+- `src/fire/` contains the fire page: the combustion solver, the scenes and scenery, the flame renderer with bloom, and the torch interaction.
+- `src/bubble/` contains the bubble page: the film solver on cube maps, the thin-film ray tracer, the stirring and popping interaction and the lifecycle of each bubble.
 - `src/wind/` contains the wind tunnel page: the tunnel solver, the object shapes, the smoke and object renderer, and the drag and smoke-wand interaction.
 - `src/gl/` holds small WebGL2 helpers for programs, textures and framebuffers.
 - `src/sim/` contains the SPH solver, the bitonic sort, the scene presets and the simulation shaders.

@@ -10,6 +10,8 @@ export default defineConfig({
         water: resolve(__dirname, 'index.html'),
         paint: resolve(__dirname, 'paint.html'),
         wind: resolve(__dirname, 'wind.html'),
+        fire: resolve(__dirname, 'fire.html'),
+        bubble: resolve(__dirname, 'bubble.html'),
       },
     },
   },

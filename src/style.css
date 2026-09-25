@@ -103,6 +103,28 @@ body.theme-light .title h1 {
   background-clip: text;
 }
 
+body.theme-fire {
+  --accent: #ff9a3c;
+  background: #050507;
+}
+
+body.theme-fire .title h1 {
+  background: linear-gradient(90deg, #ffd36b, #ff7a1a, #e8332a);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+body.theme-bubble {
+  --accent: #b18cff;
+  background: #040406;
+}
+
+body.theme-bubble .title h1 {
+  background: linear-gradient(90deg, #ff6ad5, #b18cff, #60e0ff, #7dffb0, #ffe066);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 body.theme-light .switcher a.active {
   background: rgba(0, 0, 0, 0.08);
 }

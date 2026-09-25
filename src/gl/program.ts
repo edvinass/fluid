@@ -10,6 +10,7 @@ const SAMPLER_TYPES = new Set<GLenum>([
   WebGL2RenderingContext.SAMPLER_2D,
   WebGL2RenderingContext.INT_SAMPLER_2D,
   WebGL2RenderingContext.UNSIGNED_INT_SAMPLER_2D,
+  WebGL2RenderingContext.SAMPLER_CUBE,
 ]);
 
 function compile(gl: WebGL2RenderingContext, type: GLenum, source: string, name: string): WebGLShader {
@@ -79,7 +80,8 @@ export class Program {
     const v = value as ArrayLike<number> & Float32List & Int32List;
     switch (u.type) {
       case gl.FLOAT:
-        gl.uniform1f(u.location, value as number);
+        if (typeof value === 'number') gl.uniform1f(u.location, value);
+        else gl.uniform1fv(u.location, v);
         break;
       case gl.FLOAT_VEC2:
         gl.uniform2fv(u.location, v);
@@ -118,7 +120,7 @@ export class Program {
     if (!u || u.unit < 0) return this;
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE0 + u.unit);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.bindTexture(u.type === gl.SAMPLER_CUBE ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, texture);
     return this;
   }
 
