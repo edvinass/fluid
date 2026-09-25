@@ -1,12 +1,13 @@
 # Fluid
 
-Five real-time, interactive 3D fluid visualisations that run in the browser:
+Six real-time, interactive 3D fluid visualisations that run in the browser:
 
 - **Water** (`index.html`): a tank of water made of particles that you can slosh, stir and tilt.
 - **Paint** (`paint.html`): pour coloured paint into a glass tank of water and watch it sink, curl and mix.
 - **Wind** (`wind.html`): a wind tunnel where smoke streams around a wing, a car and other shapes.
 - **Fire** (`fire.html`): a campfire, a gas burner, fireballs and a torch you can wield, at night.
 - **Bubble** (`bubble.html`): a soap bubble whose film swirls and shimmers with interference colours until it pops.
+- **Honey** (`honey.html`): drizzle honey onto a plate, lift a honey dipper out of a bowl, or drop blobs of syrup, caramel and chocolate.
 
 Switch between them with the toggle in the top-left corner.
 
@@ -142,12 +143,36 @@ The soap film is simulated as a thin, incompressible 2D fluid flowing over the s
 
 The bubble is ray traced in one pass. At its front and back surfaces, the colour comes from thin-film interference: light reflected off the film's inner and outer faces cancels or reinforces depending on thickness, angle and wavelength. The shader sums that over 16 wavelengths, converts to colour with the CIE colour matching functions and reflects the environment with it. As the top of the bubble drains, its film fades from rich colours to pale silver and gold. Left long enough (turn off "Pop by itself"), it thins into black film, which barely reflects at all. The "Resolution" setting sets the size of each cube face, from Low (128 texels) to Max (768).
 
+## Honey
+
+| Input | Action |
+| --- | --- |
+| Click or drag | Drizzle: move the dipper. Dipper: lift and move it. Drop: drop a blob |
+| Right drag or Ctrl + drag | Orbit the camera |
+| Scroll / pinch | Zoom |
+| 1 to 3 | Drizzle, dipper or drop |
+| T | Twirl the dipper |
+| C | Start again |
+| Space | Pause or resume |
+
+The bottom bar picks the liquid: honey, maple syrup, caramel, chocolate or water. Each has its own viscosity and colour, and you can change the viscosity separately. On touch devices, one finger acts and two fingers orbit and zoom. When nobody is interacting, each scene plays by itself: the drizzle traces loops across the plate, the dipper lifts out of the bowl and drips, and blobs drop now and then.
+
+Thick liquids are hard for the methods the other pages use, so this page uses the Material Point Method (MLS-MPM). Particles carry the liquid, and a background grid (stored as a 2D atlas of slices, like the paint page) does the physics. Each substep:
+
+1. Transfers the particles' mass and momentum to the 27 grid nodes around each one. The GPU does this by drawing a point per particle and node, with additive blending (this needs `EXT_float_blend`).
+2. Turns momentum into velocity, adds gravity, and makes nodes inside the plate, bowl or dipper take on that object's velocity, so the liquid sticks.
+3. Solves viscosity implicitly with Jacobi iterations, which stays stable however thick the liquid is.
+4. Transfers the new velocities and their gradients back to the particles, moves them and keeps them out of the scenery.
+
+Pressure comes from how much each particle's volume has changed, which keeps the liquid nearly incompressible. The table, plate, bowl and dipper are ray marched with soft shadows, and the liquid is drawn with the water page's screen-space technique. The liquid is shaded as a clear, amber liquid. What's behind it is bent by refraction and tinted by Beer-Lambert absorption, so thin films glow gold and thick pools turn deep amber. Domes of liquid focus bright caustics onto the dish, and the surface reflects the room's windows. The "Resolution" setting sets the grid (48 to 96 cells across) and how many particles fit, from 65k to 393k. Pouring stops when the particle budget is full.
+
 ## Project layout
 
 - `src/main.ts` sets up the water page and runs its frame loop.
 - `src/paint/` contains the paint page: the grid solver, volume renderer, pouring interaction, palette and settings.
 - `src/fire/` contains the fire page: the combustion solver, the scenes and scenery, the flame renderer with bloom, and the torch interaction.
 - `src/bubble/` contains the bubble page: the film solver on cube maps, the thin-film ray tracer, the stirring and popping interaction and the lifecycle of each bubble.
+- `src/honey/` contains the honey page: the MPM solver, the scenes and liquids, the table-top renderer and the dipper interaction.
 - `src/wind/` contains the wind tunnel page: the tunnel solver, the object shapes, the smoke and object renderer, and the drag and smoke-wand interaction.
 - `src/gl/` holds small WebGL2 helpers for programs, textures and framebuffers.
 - `src/sim/` contains the SPH solver, the bitonic sort, the scene presets and the simulation shaders.

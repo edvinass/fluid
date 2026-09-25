@@ -125,6 +125,17 @@ body.theme-bubble .title h1 {
   background-clip: text;
 }
 
+body.theme-honey {
+  --accent: #f0b429;
+  background: #120c07;
+}
+
+body.theme-honey .title h1 {
+  background: linear-gradient(90deg, #ffd66b, #e8a317, #b5561c);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 body.theme-light .switcher a.active {
   background: rgba(0, 0, 0, 0.08);
 }

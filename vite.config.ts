@@ -12,6 +12,7 @@ export default defineConfig({
         wind: resolve(__dirname, 'wind.html'),
         fire: resolve(__dirname, 'fire.html'),
         bubble: resolve(__dirname, 'bubble.html'),
+        honey: resolve(__dirname, 'honey.html'),
       },
     },
   },
