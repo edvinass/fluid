@@ -6,10 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve dist -l tcp://0.0.0.0:${PORT:-3000}"
+  },
+  "engines": {
+    "node": ">=20.19"
   },
   "dependencies": {
     "lil-gui": "^0.21.0",
+    "serve": "^14.2.6",
     "three": "^0.186.1"
   },
   "devDependencies": {
